@@ -24,20 +24,13 @@
 | `links` | 友情链接 |
 | `moments` 或 `shuoshuo` | 说说 |
 
-友情链接数据写在页面内容的注释块内：
+友情链接使用 WordPress 原生书签：在后台「链接 → 链接分类」创建分组，再在「链接 → 添加链接」填写名称、URL、描述和图片地址，友链页会按链接分类展示可见书签。页面正文只用作介绍；旧版写在 `timellow-links` 注释块里的友链会在管理员进入后台时导入书签，原内容保存在页面的 `_timellow_legacy_links_backup` 字段。
 
-```text
-<!-- timellow-links-start -->
-# 博客
-示例站点 | https://example.com/ | 站点描述 | https://example.com/icon.png
-<!-- timellow-links-end -->
-```
-
-注释块以外的内容会作为页面介绍显示；名称和 URL 必填，描述和图标可省略。说说使用后台的「说说」内容类型，支持正文、特色图片、地点和来源。若说说页面使用自定义 slug，请选择「说说」页面模板，并在主题设置中填写该 slug。
+说说使用后台的「说说」内容类型，支持正文、特色图片、地点和来源。若说说页面使用自定义 slug，请选择「说说」页面模板，并在主题设置中填写该 slug。
 
 ## 本地演示
 
-仓库中的 `.local/` 已安装 WordPress、SQLite 集成插件和 Timellow Markdown Editor，并被 Git 忽略。基础演示数据包含 8 篇文章、6 个页面、3 条说说、分类、标签和示例评论；本地还发布了一篇 [Markdown 写作示例](http://127.0.0.1:8098/markdown-writing-demo/) 供体验编辑器。运行：
+仓库中的 `.local/` 已安装 WordPress、SQLite 集成插件和 Timellow Markdown Editor，并被 Git 忽略。基础演示数据包含 8 篇文章、6 个页面、3 条说说、3 条书签、分类、标签和示例评论；本地还发布了一篇 [Markdown 写作示例](http://127.0.0.1:8098/markdown-writing-demo/) 供体验编辑器。运行：
 
 ```sh
 php tools/seed-demo.php

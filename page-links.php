@@ -1,8 +1,7 @@
 <?php /* Template Name: 友情链接 */ get_header(); while (have_posts()): the_post();
 $raw = get_post_field('post_content', get_the_ID());
-$groups = timellow_parse_links($raw);
+$groups = timellow_bookmark_groups();
 $intro = preg_replace('/<!--\s*timellow-links-start\s*-->.*?<!--\s*timellow-links-end\s*-->/is', '', $raw);
-if (!preg_match('/<!--\s*timellow-links-start\s*-->/i', $raw) && $groups) $intro = '';
 ?>
 <main class="site-main"><section class="page-hero"><h1 class="page-title"><?php the_title(); ?></h1></section>
     <?php if (trim(wp_strip_all_tags($intro))): ?><article class="content-card"><div class="article-body"><?php echo apply_filters('the_content', $intro); ?></div></article><?php endif; ?>

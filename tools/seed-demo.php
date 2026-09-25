@@ -63,17 +63,40 @@ $pages = [
     ['archives', '归档', '<p>按时间整理的文章目录。</p>'],
     ['categories', '分类', '<p>从感兴趣的主题开始阅读。</p>'],
     ['tags', '标签', '<p>每个标签都是一条通往相关内容的小路。</p>'],
-    ['links', '友链', '<p>一些值得常去的站点。</p>\n<!-- timellow-links-start -->\n# 博客与创作\nWordPress | https://wordpress.org/ | 开源内容管理系统 |\nTypecho | https://typecho.org/ | 轻量博客程序 |\n# 设计与灵感\nA List Apart | https://alistapart.com/ | 关于网页设计和开发的文章 |\n<!-- timellow-links-end -->'],
+    ['links', '友链', '<p>一些值得常去的站点。</p>'],
     ['moments', '说说', '<p>短一些的近况和瞬间。</p>'],
 ];
 foreach ($pages as [$slug, $title, $content]) {
     $content = str_replace('\\n', "\n", $content);
     $existing = get_page_by_path($slug);
-    if ($existing) {
-        if ($slug === 'links') wp_update_post(['ID' => $existing->ID, 'post_content' => $content]);
-        continue;
-    }
+    if ($existing) continue;
     wp_insert_post(['post_type' => 'page', 'post_status' => 'publish', 'post_name' => $slug, 'post_title' => $title, 'post_content' => $content, 'comment_status' => $slug === 'links' ? 'open' : 'closed']);
+}
+
+$links_page = get_page_by_path('links');
+if ($links_page) timellow_import_legacy_links($links_page);
+require_once ABSPATH . 'wp-admin/includes/bookmark.php';
+$demo_links = [
+    '博客与创作' => [
+        ['WordPress', 'https://wordpress.org/', '开源内容管理系统'],
+        ['Typecho', 'https://typecho.org/', '轻量博客程序'],
+    ],
+    '设计与灵感' => [
+        ['A List Apart', 'https://alistapart.com/', '关于网页设计和开发的文章'],
+    ],
+];
+foreach ($demo_links as $group => $items) {
+    $term = term_exists($group, 'link_category');
+    if (!$term) $term = wp_insert_term($group, 'link_category');
+    if (is_wp_error($term)) throw new RuntimeException($term->get_error_message());
+    $category_id = (int) (is_array($term) ? $term['term_id'] : $term);
+    $existing_urls = array_column(get_bookmarks(['category' => $category_id, 'hide_invisible' => 0]), 'link_url');
+    foreach ($items as [$name, $url, $description]) {
+        if (in_array($url, $existing_urls, true)) continue;
+        $result = wp_insert_link(['link_name' => $name, 'link_url' => $url, 'link_description' => $description, 'link_category' => [$category_id]], true);
+        if (is_wp_error($result) || !$result) throw new RuntimeException(is_wp_error($result) ? $result->get_error_message() : '无法创建演示书签。');
+        $existing_urls[] = $url;
+    }
 }
 
 $moment_data = [

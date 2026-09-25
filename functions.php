@@ -12,6 +12,7 @@ function timellow_setup() {
     register_nav_menus(['primary' => '主导航']);
 }
 add_action('after_setup_theme', 'timellow_setup');
+add_filter('pre_option_link_manager_enabled', '__return_true');
 
 function timellow_assets() {
     wp_enqueue_style('timellow', get_stylesheet_uri(), [], wp_get_theme()->get('Version'));
@@ -251,7 +252,27 @@ function timellow_comment($comment, $args, $depth) {
     <?php
 }
 
-function timellow_parse_links($text) {
+function timellow_bookmark_groups() {
+    $groups = [];
+    $categories = get_terms(['taxonomy' => 'link_category', 'hide_empty' => true, 'orderby' => 'name']);
+    if (is_wp_error($categories)) return $groups;
+    foreach ($categories as $category) {
+        $bookmarks = get_bookmarks(['category' => $category->term_id, 'orderby' => 'name', 'hide_invisible' => 1]);
+        if (!$bookmarks) continue;
+        $groups[$category->name] = array_map(static function ($bookmark) {
+            return [
+                'name' => $bookmark->link_name,
+                'url' => $bookmark->link_url,
+                'description' => trim((string) $bookmark->link_description),
+                'image' => trim((string) $bookmark->link_image),
+                'host' => wp_parse_url($bookmark->link_url, PHP_URL_HOST) ?: '',
+            ];
+        }, $bookmarks);
+    }
+    return $groups;
+}
+
+function timellow_parse_legacy_links($text) {
     $groups = [];
     $source = $text;
     if (preg_match('/<!--\s*timellow-links-start\s*-->(.*?)<!--\s*timellow-links-end\s*-->/is', $text, $match)) {
@@ -275,6 +296,46 @@ function timellow_parse_links($text) {
     }
     return $groups;
 }
+
+function timellow_import_legacy_links($page) {
+    if (!preg_match('/<!--\s*timellow-links-start\s*-->.*?<!--\s*timellow-links-end\s*-->/is', $page->post_content, $match)) return;
+    $groups = timellow_parse_legacy_links($match[0]);
+    if (!$groups) return;
+    require_once ABSPATH . 'wp-admin/includes/bookmark.php';
+    foreach ($groups as $group => $items) {
+        $term = term_exists($group, 'link_category');
+        if (!$term) $term = wp_insert_term($group, 'link_category');
+        if (is_wp_error($term)) return;
+        $category_id = (int) (is_array($term) ? $term['term_id'] : $term);
+        $existing = array_column(get_bookmarks(['category' => $category_id, 'hide_invisible' => 0]), 'link_url');
+        foreach ($items as $item) {
+            if (in_array($item['url'], $existing, true)) continue;
+            $result = wp_insert_link([
+                'link_name' => $item['name'],
+                'link_url' => $item['url'],
+                'link_description' => $item['description'],
+                'link_image' => $item['image'],
+                'link_category' => [$category_id],
+            ], true);
+            if (is_wp_error($result) || !$result) return;
+            $existing[] = $item['url'];
+        }
+    }
+    update_post_meta($page->ID, '_timellow_legacy_links_backup', $match[0]);
+    wp_update_post(['ID' => $page->ID, 'post_content' => trim(str_replace($match[0], '', $page->post_content))]);
+}
+
+function timellow_migrate_legacy_links() {
+    if (!current_user_can('manage_links')) return;
+    $pages = [];
+    $page = get_page_by_path('links');
+    if ($page) $pages[$page->ID] = $page;
+    foreach (get_pages(['meta_key' => '_wp_page_template', 'meta_value' => 'page-links.php']) as $page) {
+        $pages[$page->ID] = $page;
+    }
+    foreach ($pages as $page) timellow_import_legacy_links($page);
+}
+add_action('admin_init', 'timellow_migrate_legacy_links');
 
 function timellow_social_links() {
     $links = [];
