@@ -102,6 +102,7 @@ function timellow_body_classes($classes) {
     return $classes;
 }
 add_filter('body_class', 'timellow_body_classes');
+add_filter('use_widgets_block_editor', '__return_false');
 
 function timellow_register_widgets() {
     register_sidebar([
