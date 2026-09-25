@@ -51,7 +51,7 @@ function timellow_customize($wp_customize) {
     $fields = [
         'subtitle' => ['站点副标题', 'text', 'Stay hungry. Stay foolish.'],
         'layout_mode' => ['页面布局', 'select', 'single', ['single' => '单栏', 'two_column' => '双栏']],
-        'sidebar_profile_avatar' => ['侧边栏头像 URL', 'url', ''],
+        'sidebar_profile_avatar' => ['自定义侧边栏头像 URL（留空使用 Gravatar）', 'url', ''],
         'sidebar_profile_bio' => ['侧边栏简介', 'textarea', ''],
         'moments_page_slug' => ['说说页面 Slug', 'text', 'moments'],
         'favicon_url' => ['Favicon URL', 'url', ''],
