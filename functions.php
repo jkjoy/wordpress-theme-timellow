@@ -22,16 +22,29 @@ function timellow_assets() {
     }
     $mode = get_theme_mod('font_mode', 'default');
     if ($mode === 'lxgw') {
-        wp_add_inline_style('timellow', '@font-face{font-family:TimellowLXGW;src:url("' . esc_url(get_template_directory_uri() . '/assets/fonts/lxgw.woff2') . '") format("woff2");font-display:swap}body{--site-font-family:TimellowLXGW,serif}');
+        wp_add_inline_style('timellow', '@font-face{font-family:TimellowLXGW;src:url("' . esc_url(get_template_directory_uri() . '/assets/fonts/lxgw.woff2') . '") format("woff2");font-display:optional}body{--site-font-family:TimellowLXGW,serif}');
     } elseif ($mode === 'custom' && get_theme_mod('font_url')) {
         $name = sanitize_text_field(get_theme_mod('font_name', 'TimellowCustom'));
         $url = esc_url_raw(get_theme_mod('font_url'));
         if (preg_match('/\.(woff2?|ttf|otf)(\?.*)?$/i', $url)) {
-            wp_add_inline_style('timellow', '@font-face{font-family:TimellowCustom;src:url("' . esc_url($url) . '");font-display:swap}body{--site-font-family:TimellowCustom,"' . esc_attr($name) . '",sans-serif}');
+            wp_add_inline_style('timellow', '@font-face{font-family:TimellowCustom;src:url("' . esc_url($url) . '");font-display:optional}body{--site-font-family:TimellowCustom,"' . esc_attr($name) . '",sans-serif}');
         }
     }
 }
 add_action('wp_enqueue_scripts', 'timellow_assets');
+
+function timellow_preload_font($resources) {
+    if (get_theme_mod('font_mode', 'default') === 'lxgw') {
+        $resources[] = [
+            'href' => get_template_directory_uri() . '/assets/fonts/lxgw.woff2',
+            'as' => 'font',
+            'type' => 'font/woff2',
+            'crossorigin' => 'anonymous',
+        ];
+    }
+    return $resources;
+}
+add_filter('wp_preload_resources', 'timellow_preload_font');
 
 function timellow_customize($wp_customize) {
     $wp_customize->add_section('timellow_options', ['title' => 'Timellow 设置', 'priority' => 35]);
