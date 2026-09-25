@@ -17,6 +17,14 @@ function timellow_plugin_disable_emoji() {
 }
 add_action('init', 'timellow_plugin_disable_emoji');
 
+function timellow_plugin_show_admin_bar($show) {
+    if (!is_admin() && !empty(timellow_plugin_options()['disable_front_admin_bar'])) {
+        return false;
+    }
+    return $show;
+}
+add_filter('show_admin_bar', 'timellow_plugin_show_admin_bar');
+
 function timellow_plugin_use_block_editor($use_block_editor, $post_type) {
     $settings = timellow_plugin_options();
     if (!empty($settings['disable_gutenberg'])) {

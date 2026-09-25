@@ -31,7 +31,7 @@ function timellow_plugin_save_settings() {
     $input = isset($_POST['timellow']) && is_array($_POST['timellow']) ? wp_unslash($_POST['timellow']) : [];
     $old = timellow_plugin_options();
     $settings = $old;
-    foreach (['optimize_assets', 'disable_gutenberg', 'disable_block_styles', 'markdown_editor', 'comment_levels', 'comment_environment', 'smtp_enabled', 'smtp_auth'] as $key) {
+    foreach (['optimize_assets', 'disable_gutenberg', 'disable_block_styles', 'disable_front_admin_bar', 'markdown_editor', 'comment_levels', 'comment_environment', 'smtp_enabled', 'smtp_auth'] as $key) {
         $settings[$key] = !empty($input[$key]) ? 1 : 0;
     }
     foreach (['post_cache_ttl', 'page_cache_ttl', 'sidebar_cache_ttl'] as $key) {
@@ -144,6 +144,7 @@ function timellow_plugin_settings_page() {
         <table class="form-table" role="presentation">
             <tr><th scope="row">古腾堡编辑器</th><td><?php timellow_plugin_checkbox('disable_gutenberg', (bool) $settings['disable_gutenberg'], '禁用文章、页面和小工具的区块编辑器'); ?></td></tr>
             <tr><th scope="row">区块样式</th><td><?php timellow_plugin_checkbox('disable_block_styles', (bool) $settings['disable_block_styles'], '前台不加载 WordPress 区块样式'); ?><p class="description">已有区块内容依赖这些样式时，可关闭此项。</p></td></tr>
+            <tr><th scope="row">前台工具栏</th><td><?php timellow_plugin_checkbox('disable_front_admin_bar', (bool) $settings['disable_front_admin_bar'], '隐藏前台 WordPress 工具栏'); ?><p class="description">仅影响网站前台；后台工具栏保持可用。</p></td></tr>
             <tr><th scope="row">Markdown 编辑器</th><td><?php timellow_plugin_checkbox('markdown_editor', (bool) $settings['markdown_editor'], '启用文章、页面和说说的 Markdown 编辑器'); ?><p class="description">关闭后继续解析已有 Markdown 内容；开启时，这些内容类型使用经典编辑界面。</p></td></tr>
             <tr><th scope="row">Emoji 资源</th><td><?php timellow_plugin_checkbox('optimize_assets', (bool) $settings['optimize_assets'], '移除 WordPress 前台 Emoji 外部脚本'); ?><p class="description">主题资源仍从本站加载；其他插件资源不会被改写。</p></td></tr>
         </table>
