@@ -7,6 +7,9 @@
   overflow: hidden;
 }
 
+#timellow-convert-markdown { margin-right: 8px; white-space: nowrap; }
+#timellow-convert-markdown[hidden] { display: none; }
+
 .timellow-md * { box-sizing: border-box; }
 
 .timellow-md-header,

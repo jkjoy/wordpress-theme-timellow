@@ -119,6 +119,15 @@ function timellow_md_editor($post) {
 }
 add_action('edit_form_after_title', 'timellow_md_editor');
 
+function timellow_md_convert_button($post) {
+    if (!timellow_md_enabled() || !$post instanceof WP_Post || $post->post_type !== 'post' || !current_user_can('edit_post', $post->ID)) {
+        return;
+    }
+    echo '<button type="button" id="timellow-convert-markdown" class="button" aria-controls="content"' .
+        (timellow_md_mode($post) === 'markdown' ? ' hidden' : '') . '>转换为 Markdown</button>';
+}
+add_action('post_submitbox_start', 'timellow_md_convert_button');
+
 function timellow_md_admin_assets($hook) {
     if (!timellow_md_enabled()) return;
     if (!in_array($hook, ['post.php', 'post-new.php'], true)) return;
@@ -126,7 +135,11 @@ function timellow_md_admin_assets($hook) {
     if (!$screen || !timellow_md_supports($screen->post_type)) return;
     wp_enqueue_media();
     wp_enqueue_style('timellow-markdown-editor', plugins_url('assets/editor.css', TIMELLOW_PLUGIN_DIR . '/timellow.php'), [], TIMELLOW_PLUGIN_VERSION);
-    wp_enqueue_script('timellow-markdown-editor', plugins_url('assets/editor.js', TIMELLOW_PLUGIN_DIR . '/timellow.php'), [], TIMELLOW_PLUGIN_VERSION, true);
+    if ($screen->post_type === 'post') {
+        wp_enqueue_script('timellow-turndown', plugins_url('vendor/turndown.js', TIMELLOW_PLUGIN_DIR . '/timellow.php'), [], '7.2.4', true);
+        wp_enqueue_script('timellow-turndown-gfm', plugins_url('vendor/turndown-plugin-gfm.js', TIMELLOW_PLUGIN_DIR . '/timellow.php'), ['timellow-turndown'], '1.0.2', true);
+    }
+    wp_enqueue_script('timellow-markdown-editor', plugins_url('assets/editor.js', TIMELLOW_PLUGIN_DIR . '/timellow.php'), $screen->post_type === 'post' ? ['timellow-turndown-gfm'] : [], TIMELLOW_PLUGIN_VERSION, true);
     wp_localize_script('timellow-markdown-editor', 'timellowMarkdown', [
         'ajaxUrl' => admin_url('admin-ajax.php'),
         'nonce' => wp_create_nonce('timellow_md_preview'),

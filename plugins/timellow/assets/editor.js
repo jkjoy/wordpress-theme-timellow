@@ -6,8 +6,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const preview = editor.querySelector('.timellow-md-preview');
   const status = editor.querySelector('.timellow-md-status');
   const modeInput = editor.querySelector('[name="timellow_md_mode"]');
+  const convertButton = document.getElementById('timellow-convert-markdown');
   let previewTimer;
   let previewRequest;
+  let conversionPending = false;
+
+  if (convertButton) {
+    const publishingAction = document.getElementById('publishing-action');
+    publishingAction?.insertBefore(convertButton, publishingAction.querySelector('.spinner'));
+    convertButton.hidden = modeInput.value !== 'html';
+  }
 
   function setView(view) {
     editor.dataset.view = view;
@@ -17,15 +25,45 @@ document.addEventListener('DOMContentLoaded', () => {
     if (view !== 'edit') renderPreview();
   }
 
-  function setFormat(format) {
+  function setFormat(format, confirmChange = true) {
     if (format === modeInput.value) return;
-    if (textarea.value.trim() && !window.confirm('切换格式不会自动转换现有正文，继续吗？')) return;
+    if (confirmChange && textarea.value.trim() && !window.confirm('切换格式不会自动转换现有正文，继续吗？')) return;
     modeInput.value = format;
     editor.dataset.format = format;
+    if (format !== 'markdown') conversionPending = false;
+    if (convertButton) convertButton.hidden = format !== 'html';
     editor.querySelectorAll('[data-format]').forEach((button) => {
       button.setAttribute('aria-pressed', String(button.dataset.format === format));
     });
     renderPreview();
+  }
+
+  function convertHtmlToMarkdown() {
+    if (modeInput.value !== 'html' || !textarea.value.trim()) return;
+    if (typeof window.TurndownService !== 'function' || !window.turndownPluginGfm?.gfm) {
+      status.textContent = '转换器未加载，请刷新页面重试。';
+      return;
+    }
+
+    try {
+      const converter = new window.TurndownService({ headingStyle: 'atx', codeBlockStyle: 'fenced', bulletListMarker: '-' });
+      converter.use(window.turndownPluginGfm.gfm);
+      const markdown = converter.turndown(textarea.value);
+      if (!markdown.trim()) {
+        status.textContent = '未找到可转换的正文。';
+        return;
+      }
+      if (!window.confirm('将当前 HTML 正文转换为 Markdown？转换后请检查预览，再点击发布或更新保存。')) return;
+
+      conversionPending = true;
+      textarea.value = markdown;
+      setFormat('markdown', false);
+      textarea.dispatchEvent(new Event('input', { bubbles: true }));
+      status.textContent = '已转换为 Markdown，尚未保存。';
+      textarea.focus();
+    } catch (error) {
+      status.textContent = '转换失败，原正文未改动。';
+    }
   }
 
   async function renderPreview() {
@@ -50,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const result = await response.json();
       if (!response.ok || !result.success) throw new Error(result.data?.message || '预览失败');
       preview.innerHTML = result.data.html;
-      status.textContent = '';
+      status.textContent = conversionPending ? '已转换为 Markdown，尚未保存。' : '';
     } catch (error) {
       if (error.name !== 'AbortError') status.textContent = error.message || '预览失败';
     }
@@ -133,6 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
   editor.querySelectorAll('[data-view]').forEach((button) => button.addEventListener('click', () => setView(button.dataset.view)));
   editor.querySelectorAll('[data-format]').forEach((button) => button.addEventListener('click', () => setFormat(button.dataset.format)));
   editor.querySelectorAll('[data-action]').forEach((button) => button.addEventListener('click', () => runAction(button.dataset.action)));
+  convertButton?.addEventListener('click', convertHtmlToMarkdown);
   textarea.addEventListener('input', schedulePreview);
   textarea.addEventListener('keydown', (event) => {
     if (event.key === 'Tab') {
