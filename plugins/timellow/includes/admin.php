@@ -31,7 +31,7 @@ function timellow_plugin_save_settings() {
     $input = isset($_POST['timellow']) && is_array($_POST['timellow']) ? wp_unslash($_POST['timellow']) : [];
     $old = timellow_plugin_options();
     $settings = $old;
-    foreach (['optimize_assets', 'disable_gutenberg', 'disable_block_styles', 'markdown_editor', 'comment_levels', 'smtp_enabled', 'smtp_auth'] as $key) {
+    foreach (['optimize_assets', 'disable_gutenberg', 'disable_block_styles', 'markdown_editor', 'comment_levels', 'comment_environment', 'smtp_enabled', 'smtp_auth'] as $key) {
         $settings[$key] = !empty($input[$key]) ? 1 : 0;
     }
     foreach (['post_cache_ttl', 'page_cache_ttl', 'sidebar_cache_ttl'] as $key) {
@@ -154,7 +154,10 @@ function timellow_plugin_settings_page() {
             <tr><th scope="row">侧栏列表与书签</th><td><?php timellow_plugin_number($settings, 'sidebar_cache_ttl'); ?><p class="description">填写 0 关闭；文章和页面还可以在编辑页单独覆盖。登录用户、预览及评论不使用正文缓存。</p></td></tr>
         </table>
         <h2>评论</h2>
-        <table class="form-table" role="presentation"><tr><th scope="row">评论者等级</th><td><?php timellow_plugin_checkbox('comment_levels', (bool) $settings['comment_levels'], '按邮箱的已审核评论数显示等级'); ?><p class="description">仅统计普通评论；等级表示活跃度，不验证邮箱归属。</p></td></tr></table>
+        <table class="form-table" role="presentation">
+            <tr><th scope="row">评论者等级</th><td><?php timellow_plugin_checkbox('comment_levels', (bool) $settings['comment_levels'], '按邮箱的已审核评论数显示等级'); ?><p class="description">仅统计普通评论；等级表示活跃度，不验证邮箱归属。</p></td></tr>
+            <tr><th scope="row">评论环境</th><td><?php timellow_plugin_checkbox('comment_environment', (bool) $settings['comment_environment'], '显示评论时的系统、浏览器及 IP 归属地'); ?><p class="description">仅显示大致地区，不公开 IP；使用插件内置的本地归属地数据库，不向第三方发送访客 IP。历史评论缺少浏览器或 IP 信息时隐藏对应项目。</p></td></tr>
+        </table>
         <h2>头像镜像</h2>
         <table class="form-table" role="presentation">
             <tr><th scope="row">Gravatar 地址</th><td><select name="timellow[avatar_mirror]">

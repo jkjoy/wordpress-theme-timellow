@@ -258,15 +258,32 @@ function timellow_pagination() {
     echo '</nav>';
 }
 
+function timellow_comment_device_badge($device) {
+    $icons = ['android', 'apple', 'browser', 'chrome', 'edge', 'firefox-browser', 'internet-explorer', 'linux', 'opera', 'qq', 'safari', 'system', 'weixin', 'windows'];
+    if (!is_array($device) || !in_array($device['icon'] ?? '', $icons, true) || empty($device['label'])) {
+        return;
+    }
+    $url = get_template_directory_uri() . '/assets/comment-icons/' . $device['icon'] . '.svg';
+    echo '<span class="comment-device" role="img" title="' . esc_attr($device['label']) . '" aria-label="' . esc_attr($device['label']) . '"><img src="' . esc_url($url) . '" width="14" height="14" alt="" aria-hidden="true"></span>';
+}
+
 function timellow_comment($comment, $args, $depth) {
     $level = function_exists('timellow_plugin_comment_level') ? timellow_plugin_comment_level($comment) : null;
+    $environment = function_exists('timellow_plugin_comment_environment') ? timellow_plugin_comment_environment($comment) : null;
     ?>
     <li id="li-comment-<?php comment_ID(); ?>" <?php comment_class('comment-item'); ?>>
         <article id="comment-<?php comment_ID(); ?>" class="comment-card"><div class="comment-row">
             <div class="comment-avatar"><?php echo get_avatar($comment, 48); ?></div>
             <div class="comment-main"><div class="comment-header"><div class="comment-meta-block">
                 <span class="comment-author-line"><span class="comment-author"><?php comment_author_link(); ?></span><?php if ($level): ?><span class="comment-level" data-level="<?php echo (int) $level['level']; ?>" title="<?php echo esc_attr(sprintf('累计 %d 条已审核评论', $level['count'])); ?>" aria-label="<?php echo esc_attr(sprintf('评论等级 %d，累计 %d 条已审核评论', $level['level'], $level['count'])); ?>">Lv.<?php echo (int) $level['level']; ?></span><?php endif; ?></span>
-                <time class="comment-date" datetime="<?php echo esc_attr(get_comment_date(DATE_W3C)); ?>"><?php echo esc_html(get_comment_date('Y-m-d H:i')); ?></time>
+                <span class="comment-meta-line">
+                    <time class="comment-date" datetime="<?php echo esc_attr(get_comment_date(DATE_W3C)); ?>"><?php echo esc_html(get_comment_date('Y-m-d H:i')); ?></time>
+                    <?php if ($environment): ?>
+                        <?php timellow_comment_device_badge($environment['system']); ?>
+                        <?php timellow_comment_device_badge($environment['browser']); ?>
+                        <?php if ($environment['location']): ?><span class="comment-location" title="IP 归属地，仅供参考" aria-label="<?php echo esc_attr('IP 归属地：' . $environment['location']); ?>"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg><span><?php echo esc_html($environment['location']); ?></span></span><?php endif; ?>
+                    <?php endif; ?>
+                </span>
             </div><div class="comment-actions"><?php comment_reply_link(array_merge($args, ['depth' => $depth, 'max_depth' => $args['max_depth'], 'reply_text' => '回复'])); ?></div></div>
             <div class="comment-content"><?php if ($comment->comment_approved === '0') echo '<p>评论正在等待审核。</p>'; comment_text(); ?></div>
             </div></div></article>

@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Timellow
  * Description: Front-end optimization, content caching, SMTP mail, and Gravatar mirrors for the Timellow theme.
- * Version: 1.3.0
+ * Version: 1.4.0
  * Requires at least: 6.5
  * Requires PHP: 8.0
  * Author: Timellow
@@ -14,7 +14,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('TIMELLOW_PLUGIN_VERSION', '1.3.0');
+define('TIMELLOW_PLUGIN_VERSION', '1.4.0');
 define('TIMELLOW_PLUGIN_DIR', __DIR__);
 
 require_once TIMELLOW_PLUGIN_DIR . '/includes/cache.php';
@@ -22,6 +22,7 @@ require_once TIMELLOW_PLUGIN_DIR . '/includes/frontend.php';
 require_once TIMELLOW_PLUGIN_DIR . '/includes/mail.php';
 require_once TIMELLOW_PLUGIN_DIR . '/includes/admin.php';
 require_once TIMELLOW_PLUGIN_DIR . '/includes/comment-levels.php';
+require_once TIMELLOW_PLUGIN_DIR . '/includes/comment-environment.php';
 
 function timellow_plugin_load_markdown() {
     // The former standalone plugin may still be installed on upgraded sites.
@@ -38,6 +39,7 @@ function timellow_plugin_defaults() {
         'disable_block_styles' => 1,
         'markdown_editor' => 1,
         'comment_levels' => 1,
+        'comment_environment' => 1,
         'post_cache_ttl' => 60,
         'page_cache_ttl' => 60,
         'sidebar_cache_ttl' => 5,

@@ -2,7 +2,7 @@
 
 根据 [Typecho 版 Timellow](https://github.com/jkjoy/typecho-theme-timellow) 移植的 WordPress 主题。保留原主题的首页、文章、评论、归档、分类、标签、友链、说说、侧栏以及深浅色样式。
 
-配套的 [Timellow 插件](plugins/timellow/README.md) 位于 `plugins/timellow/`，已整合 Markdown 编辑器。在「设置 → Timellow」可以开关古腾堡、区块样式、Markdown 编辑器及评论者等级，并配置前端资源精简、正文与侧栏缓存、SMTP 测试及评论通知、Gravatar 镜像。评论者等级由插件按邮箱统计已审核的普通评论，主题在评论昵称旁显示等级；旧版独立 Markdown 插件保留作兼容，新插件启用后会在后台停用它。
+配套的 [Timellow 插件](plugins/timellow/README.md) 位于 `plugins/timellow/`，已整合 Markdown 编辑器。在「设置 → Timellow」可以开关古腾堡、区块样式、Markdown 编辑器、评论者等级及评论环境，并配置前端资源精简、正文与侧栏缓存、SMTP 测试及评论通知、Gravatar 镜像。评论者等级由插件按邮箱统计已审核的普通评论，主题在评论昵称旁显示等级；评论环境显示系统、浏览器徽标及大致 IP 归属地。旧版独立 Markdown 插件保留作兼容，新插件启用后会在后台停用它。
 
 ## 安装
 
@@ -13,6 +13,8 @@
 「全站字体」内置霞鹜文楷和阿里妈妈方圆体 VF，选择后才会加载对应本地 WOFF2 文件。阿里妈妈方圆体的权利人和使用条件见 [字体授权说明](assets/fonts/README.md)。
 
 侧边栏昵称使用站点中第一位管理员或编辑的显示名称，头像默认使用该用户邮箱对应的 Gravatar；设置「自定义侧边栏头像 URL」后会优先显示自定义图片。
+
+评论中的系统和浏览器品牌徽标来自 [Font Awesome Free](https://fontawesome.com)，按 CC BY 4.0 许可使用，许可文本见 `assets/comment-icons/LICENSE.txt`；通用徽标由主题绘制。
 
 「外观 → 小工具」使用 WordPress 经典小工具界面，可在「Timellow 侧边栏补充」区域添加原生小工具；侧栏仅在双栏布局下显示。
 

@@ -3,7 +3,7 @@ Theme Name: Timellow
 Theme URI: https://www.timellow.com/
 Author: Timellow
 Description: A minimal WordPress port of the Timellow Typecho theme.
-Version: 1.0.2
+Version: 1.0.3
 Requires at least: 6.5
 Requires PHP: 8.0
 Text Domain: timellow
@@ -1958,10 +1958,52 @@ html[data-theme="dark"] .comment-level[data-level="4"],
 html[data-theme="dark"] .comment-level[data-level="5"] { color: #91c8e1; }
 html[data-theme="dark"] .comment-level[data-level="6"] { color: #e7ad83; }
 
+.comment-meta-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 7px;
+  min-width: 0;
+}
+
 .comment-date {
   color: var(--text-muted);
   font-size: 13px;
 }
+
+.comment-device {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--surface-muted);
+}
+
+.comment-device img {
+  width: 14px;
+  height: 14px;
+  opacity: 0.72;
+}
+
+html[data-theme="dark"] .comment-device img { filter: invert(1); }
+
+.comment-location {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+  max-width: 100%;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.comment-location svg { width: 13px; height: 13px; flex: 0 0 13px; }
+.comment-location span { min-width: 0; overflow-wrap: anywhere; }
 
 .comment-content {
   color: var(--text-soft);
