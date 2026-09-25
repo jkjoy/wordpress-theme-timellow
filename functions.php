@@ -23,6 +23,8 @@ function timellow_assets() {
     $mode = get_theme_mod('font_mode', 'default');
     if ($mode === 'lxgw') {
         wp_add_inline_style('timellow', '@font-face{font-family:TimellowLXGW;src:url("' . esc_url(get_template_directory_uri() . '/assets/fonts/lxgw.woff2') . '") format("woff2");font-display:optional}body{--site-font-family:TimellowLXGW,serif}');
+    } elseif ($mode === 'alimama') {
+        wp_add_inline_style('timellow', '@font-face{font-family:TimellowAlimamaFangYuan;src:url("' . esc_url(get_template_directory_uri() . '/assets/fonts/AlimamaFangYuanTiVF-Thin.woff2') . '") format("woff2");font-weight:100 900;font-style:normal;font-display:optional}body{--site-font-family:TimellowAlimamaFangYuan,sans-serif}');
     } elseif ($mode === 'custom' && get_theme_mod('font_url')) {
         $name = sanitize_text_field(get_theme_mod('font_name', 'TimellowCustom'));
         $url = esc_url_raw(get_theme_mod('font_url'));
@@ -34,9 +36,14 @@ function timellow_assets() {
 add_action('wp_enqueue_scripts', 'timellow_assets');
 
 function timellow_preload_font($resources) {
-    if (get_theme_mod('font_mode', 'default') === 'lxgw') {
+    $fonts = [
+        'lxgw' => 'lxgw.woff2',
+        'alimama' => 'AlimamaFangYuanTiVF-Thin.woff2',
+    ];
+    $mode = get_theme_mod('font_mode', 'default');
+    if (isset($fonts[$mode])) {
         $resources[] = [
-            'href' => get_template_directory_uri() . '/assets/fonts/lxgw.woff2',
+            'href' => get_template_directory_uri() . '/assets/fonts/' . $fonts[$mode],
             'as' => 'font',
             'type' => 'font/woff2',
             'crossorigin' => 'anonymous',
@@ -59,7 +66,7 @@ function timellow_customize($wp_customize) {
         'footer_note' => ['页脚补充文案', 'text', ''],
         'default_cover' => ['默认封面 URL', 'url', ''],
         'paging_mode' => ['列表翻页方式', 'select', 'pagination', ['pagination' => '页码', 'loadmore' => '加载更多']],
-        'font_mode' => ['全站字体', 'select', 'default', ['default' => '默认', 'lxgw' => '霞鹜文楷', 'custom' => '自定义']],
+        'font_mode' => ['全站字体', 'select', 'default', ['default' => '默认', 'lxgw' => '霞鹜文楷', 'alimama' => '阿里妈妈方圆体', 'custom' => '自定义']],
         'font_name' => ['自定义字体名称', 'text', ''],
         'font_url' => ['自定义字体文件 URL', 'url', ''],
         'sns_mastodon' => ['Mastodon URL', 'url', ''],
