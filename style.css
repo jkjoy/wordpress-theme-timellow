@@ -3,7 +3,7 @@ Theme Name: Timellow
 Theme URI: https://www.timellow.com/
 Author: Timellow
 Description: A minimal WordPress port of the Timellow Typecho theme.
-Version: 1.0.4
+Version: 1.0.5
 Requires at least: 6.5
 Requires PHP: 8.0
 Text Domain: timellow
@@ -2056,14 +2056,6 @@ html[data-theme="dark"] .comment-level.is-admin {
 html[data-theme="dark"] .comment-level[data-level="4"],
 html[data-theme="dark"] .comment-level[data-level="5"] { color: #91c8e1; }
 html[data-theme="dark"] .comment-level[data-level="6"] { color: #e7ad83; }
-
-.comment-meta-line {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px 7px;
-  min-width: 0;
-}
 
 .comment-date {
   color: var(--text-muted);
