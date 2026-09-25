@@ -3,7 +3,7 @@ Theme Name: Timellow
 Theme URI: https://www.timellow.com/
 Author: Timellow
 Description: A minimal WordPress port of the Timellow Typecho theme.
-Version: 1.0.3
+Version: 1.0.4
 Requires at least: 6.5
 Requires PHP: 8.0
 Text Domain: timellow
@@ -1563,6 +1563,93 @@ button {
   color: var(--accent);
 }
 
+.moment-reactions {
+  position: relative;
+  margin-top: 14px;
+  min-height: 30px;
+}
+
+.moment-reaction-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.moment-reaction-chip,
+.moment-reaction-add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 30px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface-muted);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+.moment-reaction-chip { gap: 5px; min-width: 48px; padding: 0 9px; font-size: 12px; }
+.moment-reaction-chip[hidden] { display: none; }
+.moment-reaction-emoji { font-size: 16px; line-height: 1; }
+.moment-reaction-chip:hover,
+.moment-reaction-add:hover { border-color: var(--accent-border); color: var(--accent); }
+.moment-reaction-chip:focus-visible,
+.moment-reaction-add:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.moment-reaction-chip.is-selected { border-color: var(--accent-border); background: var(--accent-soft); color: var(--accent); }
+
+.moment-reaction-add {
+  position: relative;
+  width: 34px;
+  flex: 0 0 34px;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.moment-reaction-add-plus {
+  position: absolute;
+  right: 4px;
+  bottom: 2px;
+  font-family: sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.moment-reaction-picker {
+  position: absolute;
+  z-index: 5;
+  top: calc(100% + 6px);
+  left: 0;
+  display: grid;
+  grid-template-columns: repeat(6, 34px);
+  gap: 3px;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.moment-reaction-picker[hidden] { display: none; }
+.moment-reaction-picker button {
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  font-size: 20px;
+  cursor: pointer;
+}
+.moment-reaction-picker button:hover,
+.moment-reaction-picker button:focus-visible,
+.moment-reaction-picker button.is-selected { background: var(--accent-soft); }
+.moment-reactions[aria-busy="true"] button { cursor: progress; opacity: 0.65; }
+.moment-reaction-status { display: block; margin-top: 4px; color: #b73d43; font-size: 12px; }
+.moment-reaction-status:empty { display: none; }
+html[data-theme="dark"] .moment-reaction-status { color: #ee7478; }
+
 .moment-meta {
   display: flex;
   flex-wrap: wrap;
@@ -1952,6 +2039,18 @@ button {
   border-color: rgba(154, 100, 66, 0.25);
   background: rgba(154, 100, 66, 0.1);
   color: #9a6442;
+}
+
+.comment-level.is-admin {
+  border-color: rgba(183, 61, 67, 0.3);
+  background: rgba(183, 61, 67, 0.1);
+  color: #b73d43;
+}
+
+html[data-theme="dark"] .comment-level.is-admin {
+  border-color: rgba(238, 116, 120, 0.4);
+  background: rgba(238, 116, 120, 0.15);
+  color: #ee7478;
 }
 
 html[data-theme="dark"] .comment-level[data-level="4"],

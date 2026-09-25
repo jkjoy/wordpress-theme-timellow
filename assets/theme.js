@@ -469,6 +469,126 @@ document.addEventListener('DOMContentLoaded', function () {
 
   enhanceLoadMore();
 
+  function enhanceMomentReactions() {
+    var groups = document.querySelectorAll('[data-moment-reactions]');
+    if (!groups.length) {
+      return;
+    }
+
+    function closePicker(group) {
+      group.querySelector('[data-reaction-picker]').hidden = true;
+      group.querySelector('[data-reaction-add]').setAttribute('aria-expanded', 'false');
+    }
+
+    function render(group, state) {
+      var counts = state.counts || {};
+      var selected = state.selected || '';
+
+      Array.prototype.forEach.call(group.querySelectorAll('.moment-reaction-chip'), function (chip) {
+        var key = chip.getAttribute('data-reaction-key');
+        var label = chip.getAttribute('data-reaction-label');
+        var count = Number(counts[key] || 0);
+        var active = selected === key;
+
+        chip.querySelector('[data-reaction-count]').textContent = String(count);
+        chip.hidden = count < 1 && !active;
+        chip.classList.toggle('is-selected', active);
+        chip.setAttribute('aria-pressed', active ? 'true' : 'false');
+        chip.setAttribute('aria-label', label + '，' + count + ' 次表态');
+      });
+
+      Array.prototype.forEach.call(group.querySelectorAll('[data-reaction-picker] button'), function (button) {
+        var active = button.getAttribute('data-reaction-key') === selected;
+        button.classList.toggle('is-selected', active);
+        button.setAttribute('aria-pressed', active ? 'true' : 'false');
+      });
+    }
+
+    function submit(group, key) {
+      if (group.getAttribute('aria-busy') === 'true') {
+        return;
+      }
+      var status = group.querySelector('[data-reaction-status]');
+      var buttons = group.querySelectorAll('button');
+      var data = new URLSearchParams();
+
+      data.set('action', 'timellow_react');
+      data.set('nonce', group.getAttribute('data-nonce'));
+      data.set('moment_id', group.getAttribute('data-moment-id'));
+      data.set('reaction', key);
+      status.textContent = '';
+      group.setAttribute('aria-busy', 'true');
+      Array.prototype.forEach.call(buttons, function (button) { button.disabled = true; });
+
+      fetch(group.getAttribute('data-endpoint'), {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+        body: data.toString()
+      }).then(function (response) {
+        return response.json().then(function (payload) {
+          if (!response.ok || !payload.success) {
+            throw new Error(payload.data && payload.data.message ? payload.data.message : '表态失败，请稍后重试。');
+          }
+          return payload.data;
+        });
+      }).then(function (state) {
+        render(group, state);
+      }).catch(function (error) {
+        status.textContent = error.message || '表态失败，请稍后重试。';
+      }).finally(function () {
+        group.removeAttribute('aria-busy');
+        Array.prototype.forEach.call(buttons, function (button) { button.disabled = false; });
+      });
+    }
+
+    Array.prototype.forEach.call(groups, function (group) {
+      group.addEventListener('click', function (event) {
+        var button = event.target.closest('[data-reaction-key], [data-reaction-add]');
+        if (!button || !group.contains(button)) {
+          return;
+        }
+        var picker = group.querySelector('[data-reaction-picker]');
+        var add = group.querySelector('[data-reaction-add]');
+        if (button === add) {
+          var opening = picker.hidden;
+          Array.prototype.forEach.call(groups, closePicker);
+          picker.hidden = !opening;
+          add.setAttribute('aria-expanded', opening ? 'true' : 'false');
+          if (opening) {
+            picker.querySelector('button').focus();
+          }
+          return;
+        }
+        if (picker.contains(button)) {
+          add.focus();
+        }
+        closePicker(group);
+        submit(group, button.getAttribute('data-reaction-key'));
+      });
+    });
+
+    document.addEventListener('click', function (event) {
+      Array.prototype.forEach.call(groups, function (group) {
+        if (!group.contains(event.target)) {
+          closePicker(group);
+        }
+      });
+    });
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape') {
+        Array.prototype.forEach.call(groups, function (group) {
+          if (!group.querySelector('[data-reaction-picker]').hidden) {
+            closePicker(group);
+            group.querySelector('[data-reaction-add]').focus();
+          }
+        });
+      }
+    });
+  }
+
+  enhanceMomentReactions();
+
   function setupBackToTop() {
     var button = document.querySelector('[data-back-to-top]');
 

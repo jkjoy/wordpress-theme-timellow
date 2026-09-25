@@ -153,6 +153,29 @@ function timellow_moments_page() {
     return get_page_by_path('moments') ?: get_page_by_path('shuoshuo');
 }
 
+function timellow_moment_reactions($moment_id, $state) {
+    if (!function_exists('timellow_plugin_reaction_types') || post_password_required($moment_id)) {
+        return;
+    }
+    $types = timellow_plugin_reaction_types();
+    $counts = $state['counts'] ?? [];
+    $selected = $state['selected'] ?? '';
+    ?>
+    <div class="moment-reactions" data-moment-reactions data-moment-id="<?php echo (int) $moment_id; ?>" data-endpoint="<?php echo esc_url(admin_url('admin-ajax.php')); ?>" data-nonce="<?php echo esc_attr(wp_create_nonce('timellow_react')); ?>">
+        <div class="moment-reaction-list">
+            <?php foreach ($types as $key => $type): $count = (int) ($counts[$key] ?? 0); $active = $selected === $key; ?>
+                <button type="button" class="moment-reaction-chip<?php echo $active ? ' is-selected' : ''; ?>" data-reaction-key="<?php echo esc_attr($key); ?>" data-reaction-label="<?php echo esc_attr($type['label']); ?>" aria-pressed="<?php echo $active ? 'true' : 'false'; ?>" aria-label="<?php echo esc_attr(sprintf('%s，%d 次表态', $type['label'], $count)); ?>" <?php if (!$count && !$active) echo 'hidden'; ?>><span class="moment-reaction-emoji" aria-hidden="true"><?php echo esc_html($type['emoji']); ?></span><span data-reaction-count><?php echo $count; ?></span></button>
+            <?php endforeach; ?>
+            <button type="button" class="moment-reaction-add" data-reaction-add aria-label="添加表态" title="添加表态" aria-expanded="false" aria-controls="moment-reaction-picker-<?php echo (int) $moment_id; ?>"><span aria-hidden="true">☺</span><span class="moment-reaction-add-plus" aria-hidden="true">+</span></button>
+        </div>
+        <div class="moment-reaction-picker" id="moment-reaction-picker-<?php echo (int) $moment_id; ?>" data-reaction-picker role="group" aria-label="选择表态" hidden>
+            <?php foreach ($types as $key => $type): $active = $selected === $key; ?><button type="button" class="<?php echo $active ? 'is-selected' : ''; ?>" data-reaction-key="<?php echo esc_attr($key); ?>" title="<?php echo esc_attr($type['label']); ?>" aria-label="<?php echo esc_attr($type['label']); ?>" aria-pressed="<?php echo $active ? 'true' : 'false'; ?>"><?php echo esc_html($type['emoji']); ?></button><?php endforeach; ?>
+        </div>
+        <span class="moment-reaction-status" data-reaction-status role="status" aria-live="polite"></span>
+    </div>
+    <?php
+}
+
 function timellow_meta_boxes() {
     add_meta_box('timellow-cover', 'Timellow 封面', 'timellow_cover_meta_box', 'post', 'side');
     add_meta_box('timellow-moment-meta', '说说信息', 'timellow_moment_meta_box', 'timellow_moment', 'normal');
@@ -267,15 +290,25 @@ function timellow_comment_device_badge($device) {
     echo '<span class="comment-device" role="img" title="' . esc_attr($device['label']) . '" aria-label="' . esc_attr($device['label']) . '"><img src="' . esc_url($url) . '" width="14" height="14" alt="" aria-hidden="true"></span>';
 }
 
+function timellow_comment_is_staff($comment) {
+    $user_id = (int) $comment->user_id;
+    if (!$user_id) {
+        return false;
+    }
+    return user_can($user_id, 'manage_options') ||
+        $user_id === (int) get_post_field('post_author', (int) $comment->comment_post_ID);
+}
+
 function timellow_comment($comment, $args, $depth) {
-    $level = function_exists('timellow_plugin_comment_level') ? timellow_plugin_comment_level($comment) : null;
+    $is_staff = timellow_comment_is_staff($comment);
+    $level = !$is_staff && function_exists('timellow_plugin_comment_level') ? timellow_plugin_comment_level($comment) : null;
     $environment = function_exists('timellow_plugin_comment_environment') ? timellow_plugin_comment_environment($comment) : null;
     ?>
     <li id="li-comment-<?php comment_ID(); ?>" <?php comment_class('comment-item'); ?>>
         <article id="comment-<?php comment_ID(); ?>" class="comment-card"><div class="comment-row">
             <div class="comment-avatar"><?php echo get_avatar($comment, 48); ?></div>
             <div class="comment-main"><div class="comment-header"><div class="comment-meta-block">
-                <span class="comment-author-line"><span class="comment-author"><?php comment_author_link(); ?></span><?php if ($level): ?><span class="comment-level" data-level="<?php echo (int) $level['level']; ?>" title="<?php echo esc_attr(sprintf('累计 %d 条已审核评论', $level['count'])); ?>" aria-label="<?php echo esc_attr(sprintf('评论等级 %d，累计 %d 条已审核评论', $level['level'], $level['count'])); ?>">Lv.<?php echo (int) $level['level']; ?></span><?php endif; ?></span>
+                <span class="comment-author-line"><span class="comment-author"><?php comment_author_link(); ?></span><?php if ($is_staff): ?><span class="comment-level is-admin">管理员</span><?php elseif ($level): ?><span class="comment-level" data-level="<?php echo (int) $level['level']; ?>" title="<?php echo esc_attr(sprintf('累计 %d 条已审核评论', $level['count'])); ?>" aria-label="<?php echo esc_attr(sprintf('评论等级 %d，累计 %d 条已审核评论', $level['level'], $level['count'])); ?>">Lv.<?php echo (int) $level['level']; ?></span><?php endif; ?></span>
                 <span class="comment-meta-line">
                     <time class="comment-date" datetime="<?php echo esc_attr(get_comment_date(DATE_W3C)); ?>"><?php echo esc_html(get_comment_date('Y-m-d H:i')); ?></time>
                     <?php if ($environment): ?>
