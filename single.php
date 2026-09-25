@@ -7,7 +7,7 @@
                 <span class="meta-separator"></span><a href="#comments"><?php comments_number('暂无评论', '1 条评论', '% 条评论'); ?></a>
             </div>
         </header>
-        <div class="article-body" itemprop="articleBody"><?php the_content(); wp_link_pages(); ?></div>
+        <div class="article-body" itemprop="articleBody"><?php if (function_exists('timellow_cached_content')) timellow_cached_content(); else the_content(); wp_link_pages(); ?></div>
         <?php $tags = get_the_tags(); if ($tags): ?><footer class="article-footer"><div class="tag-list"><?php foreach ($tags as $tag): ?><a class="tag-chip" href="<?php echo esc_url(get_tag_link($tag)); ?>"><span class="tag-hash">#</span><span><?php echo esc_html($tag->name); ?></span></a><?php endforeach; ?></div></footer><?php endif; ?>
     </article>
     <nav class="article-nav" aria-label="文章切换"><div class="article-nav-card"><span class="article-nav-label">上一篇</span><p class="article-nav-title"><?php if (get_previous_post()) previous_post_link('%link', '%title'); else echo '已经是第一篇了'; ?></p></div><div class="article-nav-card"><span class="article-nav-label">下一篇</span><p class="article-nav-title"><?php if (get_next_post()) next_post_link('%link', '%title'); else echo '已经是最后一篇了'; ?></p></div></nav>

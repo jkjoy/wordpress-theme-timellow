@@ -267,6 +267,13 @@ function timellow_comment($comment, $args, $depth) {
 }
 
 function timellow_bookmark_groups() {
+    if (function_exists('timellow_cached_data')) {
+        return timellow_cached_data('bookmark_groups', 'timellow_load_bookmark_groups');
+    }
+    return timellow_load_bookmark_groups();
+}
+
+function timellow_load_bookmark_groups() {
     $groups = [];
     $categories = get_terms(['taxonomy' => 'link_category', 'hide_empty' => true, 'orderby' => 'name']);
     if (is_wp_error($categories)) return $groups;
