@@ -3,7 +3,7 @@ Theme Name: Timellow
 Theme URI: https://www.timellow.com/
 Author: Timellow
 Description: A minimal WordPress port of the Timellow Typecho theme.
-Version: 1.0.1
+Version: 1.0.2
 Requires at least: 6.5
 Requires PHP: 8.0
 Text Domain: timellow
@@ -1898,16 +1898,65 @@ button {
   flex-direction: column;
   align-items: flex-start;
   gap: 2px;
+  min-width: 0;
+}
+
+.comment-author-line {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 7px;
+  min-width: 0;
 }
 
 .comment-author {
   font-weight: 600;
   font-size: 14px;
+  overflow-wrap: anywhere;
 }
 
 .comment-author a:hover {
   color: var(--accent);
 }
+
+.comment-level {
+  display: inline-flex;
+  align-items: center;
+  min-height: 19px;
+  padding: 1px 5px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--surface-muted);
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.comment-level[data-level="2"],
+.comment-level[data-level="3"] {
+  border-color: var(--accent-border);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.comment-level[data-level="4"],
+.comment-level[data-level="5"] {
+  border-color: rgba(56, 114, 151, 0.25);
+  background: rgba(56, 114, 151, 0.1);
+  color: #387297;
+}
+
+.comment-level[data-level="6"] {
+  border-color: rgba(154, 100, 66, 0.25);
+  background: rgba(154, 100, 66, 0.1);
+  color: #9a6442;
+}
+
+html[data-theme="dark"] .comment-level[data-level="4"],
+html[data-theme="dark"] .comment-level[data-level="5"] { color: #91c8e1; }
+html[data-theme="dark"] .comment-level[data-level="6"] { color: #e7ad83; }
 
 .comment-date {
   color: var(--text-muted);

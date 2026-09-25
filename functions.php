@@ -259,12 +259,13 @@ function timellow_pagination() {
 }
 
 function timellow_comment($comment, $args, $depth) {
+    $level = function_exists('timellow_plugin_comment_level') ? timellow_plugin_comment_level($comment) : null;
     ?>
     <li id="li-comment-<?php comment_ID(); ?>" <?php comment_class('comment-item'); ?>>
         <article id="comment-<?php comment_ID(); ?>" class="comment-card"><div class="comment-row">
             <div class="comment-avatar"><?php echo get_avatar($comment, 48); ?></div>
             <div class="comment-main"><div class="comment-header"><div class="comment-meta-block">
-                <span class="comment-author"><?php comment_author_link(); ?></span>
+                <span class="comment-author-line"><span class="comment-author"><?php comment_author_link(); ?></span><?php if ($level): ?><span class="comment-level" data-level="<?php echo (int) $level['level']; ?>" title="<?php echo esc_attr(sprintf('累计 %d 条已审核评论', $level['count'])); ?>" aria-label="<?php echo esc_attr(sprintf('评论等级 %d，累计 %d 条已审核评论', $level['level'], $level['count'])); ?>">Lv.<?php echo (int) $level['level']; ?></span><?php endif; ?></span>
                 <time class="comment-date" datetime="<?php echo esc_attr(get_comment_date(DATE_W3C)); ?>"><?php echo esc_html(get_comment_date('Y-m-d H:i')); ?></time>
             </div><div class="comment-actions"><?php comment_reply_link(array_merge($args, ['depth' => $depth, 'max_depth' => $args['max_depth'], 'reply_text' => '回复'])); ?></div></div>
             <div class="comment-content"><?php if ($comment->comment_approved === '0') echo '<p>评论正在等待审核。</p>'; comment_text(); ?></div>
