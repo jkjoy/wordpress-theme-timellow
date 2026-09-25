@@ -2,7 +2,7 @@
 
 与 Timellow WordPress 主题配套的独立插件，需要 WordPress 6.5+ 和 PHP 8.0+。
 
-将 `plugins/timellow` 目录放到 `wp-content/plugins/timellow`，在后台启用后进入「设置 → Timellow」。Markdown 编辑器和 Parsedown 已包含在此目录中，不再需要单独安装 `timellow-markdown`。若旧插件仍处于启用状态，Timellow 会在后台自动停用它；原有文章的 `_timellow_markdown_mode` 数据保持有效。
+将本目录放到 `wp-content/plugins/timellow`，在后台启用后进入「设置 → Timellow」。Markdown 编辑器和 Parsedown 已包含在此目录中，不再需要单独安装 `timellow-markdown`。若旧插件仍处于启用状态，Timellow 会在后台自动停用它；原有文章的 `_timellow_markdown_mode` 数据保持有效。
 
 ## 功能
 
