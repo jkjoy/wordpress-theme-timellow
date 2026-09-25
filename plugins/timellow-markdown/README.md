@@ -1,5 +1,7 @@
 # Timellow Markdown Editor
 
+此独立插件已并入 [Timellow 插件](../timellow/README.md)。现有站点可以直接启用 Timellow；旧插件会在后台自动停用，已有 Markdown 内容继续正常解析。本目录仅供旧版独立安装兼容使用。
+
 独立的 WordPress Markdown 编辑器插件，适用于文章、页面和 Timellow 的「说说」。禁用这些内容类型的古腾堡编辑器，保留 WordPress 原生的发布、草稿、修订、分类和媒体库。
 
 ## 安装

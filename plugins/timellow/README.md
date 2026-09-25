@@ -2,11 +2,12 @@
 
 与 Timellow WordPress 主题配套的独立插件，需要 WordPress 6.5+ 和 PHP 8.0+。
 
-将 `plugins/timellow` 目录放到 `wp-content/plugins/timellow`，在后台启用后进入「设置 → Timellow」。本插件不依赖 Markdown 编辑器插件；停用本插件后主题会继续正常渲染。
+将 `plugins/timellow` 目录放到 `wp-content/plugins/timellow`，在后台启用后进入「设置 → Timellow」。Markdown 编辑器和 Parsedown 已包含在此目录中，不再需要单独安装 `timellow-markdown`。若旧插件仍处于启用状态，Timellow 会在后台自动停用它；原有文章的 `_timellow_markdown_mode` 数据保持有效。
 
 ## 功能
 
-- 前台不加载 WordPress Emoji 的外部脚本；当前页面没有区块内容和区块小工具时，不加载区块 CSS。主题自带资源继续使用本地文件，其他插件的资源不会被强制改写。
+- 可分别禁用古腾堡编辑器、WordPress 前台区块样式和 Emoji 外部脚本。区块样式开关默认开启；已有区块内容依赖这些样式时可关闭。主题自带资源继续使用本地文件，其他插件的资源不会被强制改写。
+- 内置 Markdown 编辑器可单独开关，适用于文章、页面和说说，提供实时预览、媒体插入和编辑／分屏／预览视图。关闭编辑器后，已有 Markdown 内容仍按原模式解析。Markdown 使用 Parsedown 1.8.0，许可证见 `vendor/LICENSE.txt`。
 - 文章、页面正文分别设置缓存分钟数；编辑每篇文章或页面时可覆盖全局值，填 `0` 关闭。登录用户、预览、密码保护内容和非 GET 请求不使用正文缓存。评论在正文外单独渲染，不会被缓存。
 - 侧栏列表和友链书签分组使用短期缓存；更新文章、评论或书签时清理对应缓存。若正文包含按访客或时间变化的动态短代码，应为该篇关闭正文缓存。
 - Gravatar 可选择原地址、Cravatar、gravatar.loli.net 或自定义 HTTPS 镜像。只改写 Gravatar 头像 URL，保留尺寸和默认头像参数。

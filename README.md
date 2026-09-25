@@ -2,9 +2,7 @@
 
 根据 [Typecho 版 Timellow](https://github.com/jkjoy/typecho-theme-timellow) 移植的 WordPress 主题。保留原主题的首页、文章、评论、归档、分类、标签、友链、说说、侧栏以及深浅色样式。
 
-可选的 [Timellow Markdown Editor](plugins/timellow-markdown/README.md) 插件位于 `plugins/timellow-markdown/`。将其安装到 WordPress 后，可关闭古腾堡并用 Markdown 编辑文章、页面和说说；已有 HTML 内容保持原样。
-
-配套的 [Timellow 性能与邮件插件](plugins/timellow/README.md) 位于 `plugins/timellow/`，可在「设置 → Timellow」配置前端资源精简、文章和页面正文缓存、侧栏与书签缓存、SMTP 测试及评论通知、Gravatar 镜像。
+配套的 [Timellow 插件](plugins/timellow/README.md) 位于 `plugins/timellow/`，已整合 Markdown 编辑器。在「设置 → Timellow」可以开关古腾堡、区块样式及 Markdown 编辑器，并配置前端资源精简、正文与侧栏缓存、SMTP 测试及评论通知、Gravatar 镜像。旧版独立 Markdown 插件保留作兼容，新插件启用后会在后台停用它。
 
 ## 安装
 
@@ -36,7 +34,7 @@
 
 ## 本地演示
 
-仓库中的 `.local/` 已安装 WordPress、SQLite 集成插件、Timellow Markdown Editor 和 Timellow 插件，并被 Git 忽略。基础演示数据包含 8 篇文章、6 个页面、3 条说说、3 条书签、分类、标签和示例评论；本地还发布了一篇 [Markdown 写作示例](http://127.0.0.1:8098/markdown-writing-demo/) 供体验编辑器。运行：
+仓库中的 `.local/` 已安装 WordPress、SQLite 集成插件和 Timellow 插件，并被 Git 忽略。基础演示数据包含 8 篇文章、6 个页面、3 条说说、3 条书签、分类、标签和示例评论；本地还发布了一篇 [Markdown 写作示例](http://127.0.0.1:8098/markdown-writing-demo/) 供体验编辑器。运行：
 
 ```sh
 php tools/seed-demo.php

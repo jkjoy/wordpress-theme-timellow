@@ -31,7 +31,7 @@ function timellow_plugin_save_settings() {
     $input = isset($_POST['timellow']) && is_array($_POST['timellow']) ? wp_unslash($_POST['timellow']) : [];
     $old = timellow_plugin_options();
     $settings = $old;
-    foreach (['optimize_assets', 'smtp_enabled', 'smtp_auth'] as $key) {
+    foreach (['optimize_assets', 'disable_gutenberg', 'disable_block_styles', 'markdown_editor', 'smtp_enabled', 'smtp_auth'] as $key) {
         $settings[$key] = !empty($input[$key]) ? 1 : 0;
     }
     foreach (['post_cache_ttl', 'page_cache_ttl', 'sidebar_cache_ttl'] as $key) {
@@ -140,8 +140,13 @@ function timellow_plugin_settings_page() {
     <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
         <input type="hidden" name="action" value="timellow_save_settings">
         <?php wp_nonce_field('timellow_plugin_settings'); ?>
-        <h2>前端资源</h2>
-        <table class="form-table" role="presentation"><tr><th scope="row">精简 WordPress 资源</th><td><?php timellow_plugin_checkbox('optimize_assets', (bool) $settings['optimize_assets'], '关闭 Emoji 外部脚本，并在页面没有区块内容时移除区块样式'); ?><p class="description">主题样式、脚本和字体继续从本站加载；其他插件资源不会被改写。</p></td></tr></table>
+        <h2>编辑器与前端资源</h2>
+        <table class="form-table" role="presentation">
+            <tr><th scope="row">古腾堡编辑器</th><td><?php timellow_plugin_checkbox('disable_gutenberg', (bool) $settings['disable_gutenberg'], '禁用文章、页面和小工具的区块编辑器'); ?></td></tr>
+            <tr><th scope="row">区块样式</th><td><?php timellow_plugin_checkbox('disable_block_styles', (bool) $settings['disable_block_styles'], '前台不加载 WordPress 区块样式'); ?><p class="description">已有区块内容依赖这些样式时，可关闭此项。</p></td></tr>
+            <tr><th scope="row">Markdown 编辑器</th><td><?php timellow_plugin_checkbox('markdown_editor', (bool) $settings['markdown_editor'], '启用文章、页面和说说的 Markdown 编辑器'); ?><p class="description">关闭后继续解析已有 Markdown 内容；开启时，这些内容类型使用经典编辑界面。</p></td></tr>
+            <tr><th scope="row">Emoji 资源</th><td><?php timellow_plugin_checkbox('optimize_assets', (bool) $settings['optimize_assets'], '移除 WordPress 前台 Emoji 外部脚本'); ?><p class="description">主题资源仍从本站加载；其他插件资源不会被改写。</p></td></tr>
+        </table>
         <h2>缓存</h2>
         <table class="form-table" role="presentation">
             <tr><th scope="row"><label for="timellow-post-cache">文章正文</label></th><td><span id="timellow-post-cache"><?php timellow_plugin_number($settings, 'post_cache_ttl'); ?></span></td></tr>

@@ -17,31 +17,36 @@ function timellow_plugin_disable_emoji() {
 }
 add_action('init', 'timellow_plugin_disable_emoji');
 
-function timellow_plugin_has_blocks_on_page() {
-    global $wp_query;
-    if (is_active_widget(false, false, 'block', true)) {
-        return true;
+function timellow_plugin_use_block_editor($use_block_editor, $post_type) {
+    $settings = timellow_plugin_options();
+    if (!empty($settings['disable_gutenberg'])) {
+        return false;
     }
-    if ($wp_query instanceof WP_Query) {
-        foreach ($wp_query->posts as $post) {
-            if ($post instanceof WP_Post && has_blocks($post)) {
-                return true;
-            }
-        }
-    }
-    return false;
+    $markdown_types = apply_filters('timellow_markdown_post_types', ['post', 'page', 'timellow_moment']);
+    return !empty($settings['markdown_editor']) && in_array($post_type, $markdown_types, true) ? false : $use_block_editor;
 }
+add_filter('use_block_editor_for_post_type', 'timellow_plugin_use_block_editor', 10, 2);
+
+function timellow_plugin_use_block_widgets($use_block_editor) {
+    return !empty(timellow_plugin_options()['disable_gutenberg']) ? false : $use_block_editor;
+}
+add_filter('use_widgets_block_editor', 'timellow_plugin_use_block_widgets');
 
 function timellow_plugin_trim_core_styles() {
-    if (empty(timellow_plugin_options()['optimize_assets']) || timellow_plugin_has_blocks_on_page()) {
+    if (is_admin() || empty(timellow_plugin_options()['disable_block_styles'])) {
         return;
     }
-    foreach (['wp-block-library', 'wp-block-library-theme', 'classic-theme-styles', 'global-styles'] as $handle) {
-        wp_dequeue_style($handle);
+    $styles = wp_styles();
+    foreach ($styles->queue as $handle) {
+        if (str_starts_with($handle, 'wp-block-') || in_array($handle, ['global-styles', 'classic-theme-styles', 'core-block-supports'], true)) {
+            wp_dequeue_style($handle);
+        }
     }
     remove_action('wp_footer', 'wp_enqueue_global_styles', 1);
 }
-add_action('wp_enqueue_scripts', 'timellow_plugin_trim_core_styles', 100);
+add_action('wp_enqueue_scripts', 'timellow_plugin_trim_core_styles', 1000);
+add_action('wp_print_styles', 'timellow_plugin_trim_core_styles', 0);
+add_action('wp_footer', 'timellow_plugin_trim_core_styles', 5);
 
 function timellow_plugin_gravatar_url($url) {
     $settings = timellow_plugin_options();
