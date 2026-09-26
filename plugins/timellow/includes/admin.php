@@ -79,6 +79,15 @@ function timellow_plugin_save_settings() {
 }
 add_action('admin_post_timellow_save_settings', 'timellow_plugin_save_settings');
 
+function timellow_plugin_clear_cache_request() {
+    if (!current_user_can('manage_options')) {
+        wp_die('没有权限。');
+    }
+    check_admin_referer('timellow_clear_cache');
+    timellow_plugin_admin_redirect(timellow_plugin_clear_all_caches() ? 'cache_cleared' : 'cache_clear_failed');
+}
+add_action('admin_post_timellow_clear_cache', 'timellow_plugin_clear_cache_request');
+
 function timellow_plugin_send_test() {
     if (!current_user_can('manage_options')) {
         wp_die('没有权限。');
@@ -118,14 +127,16 @@ function timellow_plugin_settings_page() {
     $settings = timellow_plugin_options();
     $result = sanitize_key($_GET['timellow_result'] ?? '');
     $messages = [
-        'saved' => '设置已保存。', 'invalid_mirror' => '请填写有效的 HTTPS 头像镜像地址。',
+        'saved' => '设置已保存。', 'cache_cleared' => 'Timellow 缓存已清除。',
+        'cache_clear_failed' => '清除缓存失败，请重试。',
+        'invalid_mirror' => '请填写有效的 HTTPS 头像镜像地址。',
         'invalid_host' => 'SMTP 主机名格式无效。', 'invalid_smtp' => '启用 SMTP 需要主机名和有效的发件人邮箱。',
         'encryption_failed' => '无法加密 SMTP 密码；设置未保存。', 'test_sent' => '测试邮件已提交发送。',
         'test_failed' => '测试邮件发送失败。', 'test_invalid' => '请先启用 SMTP 并填写有效的收件地址。',
     ];
     echo '<div class="wrap"><h1>Timellow</h1>';
     if (isset($messages[$result])) {
-        $class = in_array($result, ['saved', 'test_sent'], true) ? 'notice-success' : 'notice-error';
+        $class = in_array($result, ['saved', 'cache_cleared', 'test_sent'], true) ? 'notice-success' : 'notice-error';
         echo '<div class="notice ' . esc_attr($class) . ' is-dismissible"><p>' . esc_html($messages[$result]);
         if ($result === 'test_failed') {
             $error = get_transient('timellow_mail_error_' . get_current_user_id());
@@ -154,6 +165,7 @@ function timellow_plugin_settings_page() {
             <tr><th scope="row"><label for="timellow-post-cache">文章正文</label></th><td><span id="timellow-post-cache"><?php timellow_plugin_number($settings, 'post_cache_ttl'); ?></span></td></tr>
             <tr><th scope="row">页面正文</th><td><?php timellow_plugin_number($settings, 'page_cache_ttl'); ?></td></tr>
             <tr><th scope="row">侧栏列表与书签</th><td><?php timellow_plugin_number($settings, 'sidebar_cache_ttl'); ?><p class="description">填写 0 关闭；文章和页面还可以在编辑页单独覆盖。登录用户、预览及评论不使用正文缓存。</p></td></tr>
+            <tr><th scope="row">清除缓存</th><td><button type="submit" class="button button-secondary" form="timellow-clear-cache-form">立即清除</button><p class="description">清除 Timellow 正文、侧栏、书签与评论等级缓存，不影响其他插件缓存。</p></td></tr>
         </table>
         <h2>评论</h2>
         <table class="form-table" role="presentation">
@@ -183,6 +195,10 @@ function timellow_plugin_settings_page() {
             <tr><th scope="row">评论通知</th><td><label><input type="checkbox" name="timellow[notify_author]" value="1" <?php checked((bool) get_option('comments_notify')); ?>> 通过 WordPress 通知文章作者</label><br><label><input type="checkbox" name="timellow[notify_moderator]" value="1" <?php checked((bool) get_option('moderation_notify')); ?>> 待审核评论通知管理员</label><p class="description">沿用 WordPress 原生通知；启用 SMTP 后这些邮件会走上述服务器。</p></td></tr>
         </table>
         <?php submit_button('保存设置'); ?>
+    </form>
+    <form id="timellow-clear-cache-form" method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+        <input type="hidden" name="action" value="timellow_clear_cache">
+        <?php wp_nonce_field('timellow_clear_cache'); ?>
     </form>
     <h2>发送测试邮件</h2>
     <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">

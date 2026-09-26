@@ -9,13 +9,18 @@ function timellow_plugin_cache_allowed() {
         && ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'GET';
 }
 
+function timellow_plugin_data_cache_key($key, $settings = null) {
+    $settings = $settings ?? timellow_plugin_options();
+    return 'timellow_data_' . $settings['cache_revision'] . '_' . $key;
+}
+
 function timellow_cached_data($key, $loader, $minutes = null) {
     $settings = timellow_plugin_options();
     $minutes = $minutes ?? (int) $settings['sidebar_cache_ttl'];
     if ($minutes <= 0 || !timellow_plugin_cache_allowed()) {
         return $loader();
     }
-    $cache_key = 'timellow_' . $key;
+    $cache_key = timellow_plugin_data_cache_key($key, $settings);
     $cached = get_transient($cache_key);
     if ($cached !== false) {
         return $cached;
@@ -57,7 +62,8 @@ function timellow_cached_content($source = null) {
     // The content and format are included so edits select a new key immediately.
     $format = get_post_meta($post->ID, '_timellow_markdown_mode', true);
     $key = 'timellow_body_' . md5(implode('|', [
-        $post->ID, (int) $page, $minutes, $post->post_modified_gmt, $post->post_content, $source ?? '', $format,
+        $settings['cache_revision'], $post->ID, (int) $page, $minutes,
+        $post->post_modified_gmt, $post->post_content, $source ?? '', $format,
     ]));
     $html = get_transient($key);
     if ($html === false) {
@@ -102,7 +108,7 @@ add_action('save_post', 'timellow_plugin_save_cache_override');
 
 function timellow_plugin_clear_sidebar_cache() {
     foreach (['recent_posts', 'popular_posts', 'recent_comments', 'recent_moments', 'bookmark_groups'] as $key) {
-        delete_transient('timellow_' . $key);
+        delete_transient(timellow_plugin_data_cache_key($key));
     }
 }
 add_action('save_post', 'timellow_plugin_clear_sidebar_cache');
@@ -113,15 +119,69 @@ add_action('transition_comment_status', 'timellow_plugin_clear_sidebar_cache');
 add_action('deleted_comment', 'timellow_plugin_clear_sidebar_cache');
 
 function timellow_plugin_clear_bookmark_cache() {
-    delete_transient('timellow_bookmark_groups');
+    delete_transient(timellow_plugin_data_cache_key('bookmark_groups'));
 }
 foreach (['add_link', 'edit_link', 'delete_link', 'created_link_category', 'edited_link_category', 'delete_link_category'] as $hook) {
     add_action($hook, 'timellow_plugin_clear_bookmark_cache');
 }
 
 function timellow_plugin_clear_profile_cache() {
-    delete_transient('timellow_profile_author');
+    delete_transient(timellow_plugin_data_cache_key('profile_author'));
 }
 foreach (['profile_update', 'user_register', 'deleted_user', 'set_user_role'] as $hook) {
     add_action($hook, 'timellow_plugin_clear_profile_cache');
+}
+
+function timellow_plugin_is_content_cache_key($key) {
+    if (str_starts_with($key, 'timellow_body_') ||
+        str_starts_with($key, 'timellow_comment_levels_') ||
+        str_starts_with($key, 'timellow_data_')) {
+        return true;
+    }
+    return in_array($key, [
+        'timellow_recent_posts', 'timellow_popular_posts', 'timellow_recent_comments',
+        'timellow_recent_moments', 'timellow_bookmark_groups', 'timellow_profile_author',
+    ], true);
+}
+
+function timellow_plugin_clear_all_caches() {
+    $settings = timellow_plugin_options();
+    $settings['cache_revision'] = wp_generate_uuid4();
+    if (!update_option('timellow_plugin_settings', $settings, false)) {
+        return false;
+    }
+    $comment_revision_updated = timellow_plugin_invalidate_comment_levels();
+
+    global $wpdb;
+    $rows = $wpdb->get_col($wpdb->prepare(
+        "SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s",
+        '%timellow%'
+    ));
+    if (!is_array($rows) || $wpdb->last_error !== '') {
+        return false;
+    }
+    $keys = [];
+    foreach ($rows as $name) {
+        foreach (['_transient_timeout_', '_transient_'] as $prefix) {
+            if (str_starts_with($name, $prefix)) {
+                $key = substr($name, strlen($prefix));
+                if (timellow_plugin_is_content_cache_key($key)) {
+                    $keys[$key] = true;
+                }
+                break;
+            }
+        }
+    }
+    $records_removed = true;
+    $missing = new stdClass();
+    foreach (array_keys($keys) as $key) {
+        delete_transient($key);
+        delete_option('_transient_' . $key);
+        delete_option('_transient_timeout_' . $key);
+        if (get_option('_transient_' . $key, $missing) !== $missing ||
+            get_option('_transient_timeout_' . $key, $missing) !== $missing) {
+            $records_removed = false;
+        }
+    }
+    return $comment_revision_updated && $records_removed;
 }

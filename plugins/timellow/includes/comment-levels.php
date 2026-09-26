@@ -98,7 +98,7 @@ function timellow_plugin_comment_level($comment) {
 }
 
 function timellow_plugin_invalidate_comment_levels() {
-    update_option('timellow_comment_levels_revision', wp_generate_uuid4(), false);
+    return update_option('timellow_comment_levels_revision', wp_generate_uuid4(), false);
 }
 foreach (['wp_insert_comment', 'edit_comment', 'transition_comment_status', 'deleted_comment'] as $hook) {
     add_action($hook, 'timellow_plugin_invalidate_comment_levels');
