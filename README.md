@@ -2,7 +2,7 @@
 
 根据 [Typecho 版 Timellow](https://github.com/jkjoy/typecho-theme-timellow) 移植的 WordPress 主题。保留原主题的首页、文章、评论、归档、分类、标签、友链、说说、侧栏以及深浅色样式。
 
-配套的 [Timellow 插件](plugins/timellow/README.md) 位于 `plugins/timellow/`，已整合 Markdown 编辑器。在「设置 → Timellow」可以开关古腾堡、区块样式、前台 WordPress 工具栏、Markdown 编辑器、评论者等级及评论环境，并配置前端资源精简、正文与侧栏缓存、SMTP 测试及评论通知、Gravatar 镜像。评论者等级由插件按邮箱统计已审核的普通评论，主题在评论昵称旁显示等级；评论环境显示系统、浏览器徽标及大致 IP 归属地。旧版独立 Markdown 插件保留作兼容，新插件启用后会在后台停用它。
+配套的 [Timellow 插件](plugins/timellow/README.md) 位于 `plugins/timellow/`，已整合 Markdown 编辑器。在「设置 → Timellow」可以开关古腾堡、区块样式、前台 WordPress 工具栏、Markdown 编辑器、缓存、评论者等级及评论环境，并配置前端资源精简、正文与侧栏缓存时间、SMTP 测试及评论通知、Gravatar 镜像。评论者等级由插件按邮箱统计已审核的普通评论，主题在评论昵称旁显示等级；评论环境显示系统、浏览器徽标及大致 IP 归属地。旧版独立 Markdown 插件保留作兼容，新插件启用后会在后台停用它。
 
 ## 安装
 

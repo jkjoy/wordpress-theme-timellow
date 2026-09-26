@@ -31,7 +31,7 @@ function timellow_plugin_save_settings() {
     $input = isset($_POST['timellow']) && is_array($_POST['timellow']) ? wp_unslash($_POST['timellow']) : [];
     $old = timellow_plugin_options();
     $settings = $old;
-    foreach (['optimize_assets', 'disable_gutenberg', 'disable_block_styles', 'disable_front_admin_bar', 'markdown_editor', 'comment_levels', 'comment_environment', 'smtp_enabled', 'smtp_auth'] as $key) {
+    foreach (['optimize_assets', 'disable_gutenberg', 'disable_block_styles', 'disable_front_admin_bar', 'markdown_editor', 'comment_levels', 'comment_environment', 'cache_enabled', 'smtp_enabled', 'smtp_auth'] as $key) {
         $settings[$key] = !empty($input[$key]) ? 1 : 0;
     }
     foreach (['post_cache_ttl', 'page_cache_ttl', 'sidebar_cache_ttl'] as $key) {
@@ -72,7 +72,7 @@ function timellow_plugin_save_settings() {
     update_option('timellow_plugin_settings', $settings, false);
     update_option('comments_notify', !empty($input['notify_author']) ? '1' : '0');
     update_option('moderation_notify', !empty($input['notify_moderator']) ? '1' : '0');
-    if ($settings['sidebar_cache_ttl'] !== $old['sidebar_cache_ttl']) {
+    if ($settings['sidebar_cache_ttl'] !== $old['sidebar_cache_ttl'] || $settings['cache_enabled'] !== $old['cache_enabled']) {
         timellow_plugin_clear_sidebar_cache();
     }
     timellow_plugin_admin_redirect('saved');
@@ -150,6 +150,7 @@ function timellow_plugin_settings_page() {
         </table>
         <h2>缓存</h2>
         <table class="form-table" role="presentation">
+            <tr><th scope="row">插件缓存</th><td><?php timellow_plugin_checkbox('cache_enabled', (bool) $settings['cache_enabled'], '启用 Timellow 缓存'); ?><p class="description">关闭后绕过正文、侧栏、书签与评论等级缓存；各项时长和单篇设置保留。</p></td></tr>
             <tr><th scope="row"><label for="timellow-post-cache">文章正文</label></th><td><span id="timellow-post-cache"><?php timellow_plugin_number($settings, 'post_cache_ttl'); ?></span></td></tr>
             <tr><th scope="row">页面正文</th><td><?php timellow_plugin_number($settings, 'page_cache_ttl'); ?></td></tr>
             <tr><th scope="row">侧栏列表与书签</th><td><?php timellow_plugin_number($settings, 'sidebar_cache_ttl'); ?><p class="description">填写 0 关闭；文章和页面还可以在编辑页单独覆盖。登录用户、预览及评论不使用正文缓存。</p></td></tr>

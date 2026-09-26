@@ -4,7 +4,8 @@ if (!defined('ABSPATH')) {
 }
 
 function timellow_plugin_cache_allowed() {
-    return !is_admin() && !is_user_logged_in() && !is_preview() && !is_feed()
+    return !empty(timellow_plugin_options()['cache_enabled'])
+        && !is_admin() && !is_user_logged_in() && !is_preview() && !is_feed()
         && ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'GET';
 }
 
@@ -39,12 +40,16 @@ function timellow_cached_content($source = null) {
         $render();
         return;
     }
+    if (!timellow_plugin_cache_allowed() || post_password_required($post)) {
+        $render();
+        return;
+    }
 
     $settings = timellow_plugin_options();
     $default = (int) $settings[$post->post_type . '_cache_ttl'];
     $override = get_post_meta($post->ID, '_timellow_cache_ttl', true);
     $minutes = $override === '' ? $default : (int) $override;
-    if ($minutes <= 0 || !timellow_plugin_cache_allowed() || post_password_required($post)) {
+    if ($minutes <= 0) {
         $render();
         return;
     }

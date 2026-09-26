@@ -7,7 +7,8 @@ function timellow_plugin_comment_level_counts($comments) {
     static $counts = [];
     static $cached_revision = null;
 
-    if (empty(timellow_plugin_options()['comment_levels'])) {
+    $settings = timellow_plugin_options();
+    if (empty($settings['comment_levels'])) {
         return [];
     }
     $revision = (string) get_option('timellow_comment_levels_revision', '0');
@@ -33,7 +34,8 @@ function timellow_plugin_comment_level_counts($comments) {
     sort($missing);
 
     $key = 'timellow_comment_levels_' . md5($revision . '|' . implode('|', $missing));
-    $found = get_transient($key);
+    $use_cache = !empty($settings['cache_enabled']);
+    $found = $use_cache ? get_transient($key) : false;
     if (!is_array($found)) {
         global $wpdb;
         $found = array_fill_keys($missing, 0);
@@ -57,7 +59,7 @@ function timellow_plugin_comment_level_counts($comments) {
                 $found[$row['email']] = (int) $row['total'];
             }
         }
-        if ($complete) {
+        if ($complete && $use_cache) {
             set_transient($key, $found, 12 * HOUR_IN_SECONDS);
         }
     }
