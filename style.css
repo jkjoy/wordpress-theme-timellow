@@ -3,7 +3,7 @@ Theme Name: Timellow
 Theme URI: https://www.timellow.com/
 Author: Timellow
 Description: A minimal WordPress port of the Timellow Typecho theme.
-Version: 1.0.6
+Version: 1.0.7
 Requires at least: 6.5
 Requires PHP: 8.0
 Text Domain: timellow
@@ -125,6 +125,7 @@ html[data-theme="dark"] {
 
 html {
   scroll-behavior: smooth;
+  scrollbar-gutter: stable;
 }
 
 body {
