@@ -41,6 +41,20 @@
 
 评论中使用已登录账号发言的网站管理员或当前文章作者显示红色「管理员」标识，不显示评论等级；仅填写相同邮箱的访客不会获得该标识。
 
+## 在线更新与镜像
+
+主题与配套插件接入 WordPress 原生更新提示、一键升级和自动更新开关。首次需要手动安装带更新功能的版本（主题 1.1.0、插件 1.9.0 或更新版本）；之后发布的新版本会在后台显示。
+
+在「设置 → Timellow 更新」选择 GitHub 直连、ghfast.top、gh-proxy.com 或自定义镜像，保存后点击「立即检查更新」。版本信息与安装包均走所选线路；可开关镜像失败后的 GitHub 直连重试。自定义镜像填写支持完整 GitHub URL 转发的 HTTPS 基础地址，例如填写 `https://mirror.example.com/` 后，实际请求为 `https://mirror.example.com/https://github.com/…`。公共镜像的可用性取决于服务本身，可随时切换。
+
+检查沿用 WordPress 的更新计划，成功结果缓存 6 小时，失败缓存 15 分钟；手动检查会刷新缓存。前台读取更新计数不会发起网络请求。安装包使用发布清单中的 SHA-256 校验；下载错误或校验失败时按设置重试。主题和插件使用同一份线路设置，启用任一组件即可打开更新设置页。
+
+### 发布新版本
+
+两个仓库分别发布：先修改版本头（插件同时修改 `TIMELLOW_PLUGIN_VERSION`），提交后推送与版本号一致的标签，如主题 `v1.1.0`、插件 `v1.9.0`。各自的 GitHub Actions 会生成并发布 `timellow.zip` 和 `update.json`；也可对已有版本标签手动运行 Release 工作流。更新程序只读取正式 Release 的这两个附件。
+
+主题安装包排除 `plugins/`、开发工具和本地演示文件，插件单独安装。也可以在主题仓库运行 `python3 tools/build-release.py theme --output dist/theme`，在插件仓库运行 `python3 tools/build-release.py plugin --output dist/plugin`，手动上传生成的 ZIP 与清单到对应标签的 Release。已有版本的附件应保持不变，代码变更需增加版本号后发布。
+
 ## 本地演示
 
 仓库中的 `.local/` 已安装 WordPress、SQLite 集成插件和 Timellow 插件，并被 Git 忽略。基础演示数据包含 8 篇文章、6 个页面、3 条说说、3 条书签、分类、标签和示例评论；本地还发布了一篇 [Markdown 写作示例](http://127.0.0.1:8098/markdown-writing-demo/) 供体验编辑器。运行：
@@ -53,3 +67,4 @@ php -S 127.0.0.1:8098 -t .local/wordpress .local/wordpress/router.php
 浏览 `http://127.0.0.1:8098/`。后台账号信息在 `.local/demo-login.txt`。`seed-demo.php` 可重复运行，不会重复创建示例内容。若使用别的端口，需要同步修改 `.local/wordpress/wp-config.php` 中的 `WP_HOME` 与 `WP_SITEURL`。
 
 运行 `php tools/regression-check.php` 可在本地演示库中检查密码保护、格式修订与自动保存、Markdown 封面及分页和缓存失效；脚本会创建临时测试内容，并在结束时删除这些内容。
+运行 `php tools/update-check.php` 可离线检查更新镜像、缓存、WordPress 更新提示、下载重试和校验；所有更新请求使用本地模拟响应。

@@ -1,0 +1,42 @@
+name: Release WordPress package
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing version tag (must match the version in the package header)
+        required: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.event.inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RELEASE_TAG: ${{ github.event.inputs.tag || github.ref_name }}
+      COMPONENT: plugin
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref_name }}
+      - name: Validate and build installation package
+        run: python3 tools/build-release.py "$COMPONENT" --tag "$RELEASE_TAG" --output dist
+      - name: Prepare release notes
+        run: |
+          if ! gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release create "$RELEASE_TAG" --draft --verify-tag --title "Timellow $RELEASE_TAG" --generate-notes
+          fi
+          gh release view "$RELEASE_TAG" --json body --jq .body > "$RUNNER_TEMP/timellow-notes.md"
+          python3 tools/build-release.py "$COMPONENT" --tag "$RELEASE_TAG" --output dist --notes-file "$RUNNER_TEMP/timellow-notes.md"
+      - name: Publish update assets
+        run: |
+          gh release upload "$RELEASE_TAG" dist/timellow.zip dist/update.json --clobber
+          gh release edit "$RELEASE_TAG" --draft=false --latest

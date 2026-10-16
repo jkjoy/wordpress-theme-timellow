@@ -23,4 +23,12 @@
 
 测试邮件需要先保存并启用 SMTP。建议使用与 SMTP 账号域名匹配的发件人邮箱，以满足邮件服务商的要求。
 
+## 在线更新
+
+首次手动安装 1.9.0 或更新版本后，可通过 WordPress 原生更新页面升级后续版本，并使用原生自动更新开关。「设置 → Timellow 更新」提供 GitHub 直连、ghfast.top、gh-proxy.com 和自定义 HTTPS 文件代理；主题和插件共用线路设置，版本清单与安装包均使用选定线路。自定义地址按「镜像基础地址 + 完整 GitHub URL」拼接，可设置镜像失败后是否重试直连。公共镜像可用性取决于服务本身。
+
+保存线路后点击「立即检查更新」，结果会显示版本和实际使用的线路。成功检查缓存 6 小时，失败缓存 15 分钟，手动检查立即刷新。安装包校验 SHA-256，校验失败不会安装；若开启直连重试，会继续从 GitHub 下载。未发布正式 Release 或线路不通时显示具体状态，不会误报为已是最新版。
+
+发布时同步修改 `timellow.php` 的版本头及 `TIMELLOW_PLUGIN_VERSION`，提交并推送对应 `v版本号` 标签。仓库中的 Release 工作流会打包单层 `timellow/` 目录，发布 `timellow.zip` 和 `update.json` 附件。也可运行 `python3 tools/build-release.py plugin --output dist` 手动生成附件。版本标签必须匹配插件版本号，安装包排除开发工具、工作流及 Git 文件。已有附件保持不变，后续代码变更使用新版本发布。
+
 评论归属地数据库和 PHP 查询器来自 [ip2region](https://github.com/lionsoul2014/ip2region)，按 Apache-2.0 或 MIT 许可分发，许可文本见 `vendor/ip2region/LICENSE.md`。主题中的评论系统／浏览器品牌徽标来自 Font Awesome Free，按 CC BY 4.0 许可分发，许可文本见主题的 `assets/comment-icons/LICENSE.txt`；通用系统和浏览器徽标为主题自绘。

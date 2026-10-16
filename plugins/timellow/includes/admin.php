@@ -148,6 +148,8 @@ function timellow_plugin_settings_page() {
         echo '</p></div>';
     }
     ?>
+    <h2>在线更新</h2>
+    <p>主题和插件支持 WordPress 原生在线更新。可在 <a href="<?php echo esc_url(admin_url('options-general.php?page=timellow-updates')); ?>">Timellow 更新</a> 中切换 GitHub 镜像线路或立即检查新版本。</p>
     <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
         <input type="hidden" name="action" value="timellow_save_settings">
         <?php wp_nonce_field('timellow_plugin_settings'); ?>

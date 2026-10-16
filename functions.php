@@ -3,6 +3,10 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+require_once __DIR__ . '/inc/updater.php';
+Timellow_Updater::register('theme', get_template());
+if (is_file(WP_PLUGIN_DIR . '/timellow/timellow.php')) Timellow_Updater::register('plugin', 'timellow/timellow.php');
+
 function timellow_setup() {
     add_theme_support('title-tag');
     add_theme_support('post-thumbnails');

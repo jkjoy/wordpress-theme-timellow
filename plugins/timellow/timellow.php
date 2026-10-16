@@ -2,7 +2,8 @@
 /**
  * Plugin Name: Timellow
  * Description: Front-end optimization, content caching, SMTP mail, and Gravatar mirrors for the Timellow theme.
- * Version: 1.8.1
+ * Version: 1.9.0
+ * Update URI: https://github.com/jkjoy/wordpress-plugin-timellow
  * Requires at least: 6.5
  * Requires PHP: 8.0
  * Author: Timellow
@@ -14,8 +15,12 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('TIMELLOW_PLUGIN_VERSION', '1.8.1');
+define('TIMELLOW_PLUGIN_VERSION', '1.9.0');
 define('TIMELLOW_PLUGIN_DIR', __DIR__);
+
+require_once TIMELLOW_PLUGIN_DIR . '/includes/updater.php';
+Timellow_Updater::register('plugin', plugin_basename(__FILE__));
+if (wp_get_theme('timellow')->exists()) Timellow_Updater::register('theme', 'timellow');
 
 require_once TIMELLOW_PLUGIN_DIR . '/includes/cache.php';
 require_once TIMELLOW_PLUGIN_DIR . '/includes/frontend.php';
