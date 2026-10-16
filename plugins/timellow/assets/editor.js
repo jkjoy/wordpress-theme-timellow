@@ -5,11 +5,17 @@ document.addEventListener('DOMContentLoaded', () => {
   const textarea = editor.querySelector('#content');
   const preview = editor.querySelector('.timellow-md-preview');
   const status = editor.querySelector('.timellow-md-status');
-  const modeInput = editor.querySelector('[name="timellow_md_mode"]');
+  const modeInput = editor.querySelector('[name="_timellow_markdown_mode"]');
   const convertButton = document.getElementById('timellow-convert-markdown');
   let previewTimer;
   let previewRequest;
   let conversionPending = false;
+
+  // Core only sends title/content/excerpt unless extra revision metadata is attached.
+  window.jQuery(document).on('before-autosave.timellow', (event, data) => {
+    data._timellow_markdown_mode = modeInput.value;
+    data.timellow_md_nonce = document.getElementById('timellow_md_nonce').value;
+  });
 
   if (convertButton) {
     const publishingAction = document.getElementById('publishing-action');

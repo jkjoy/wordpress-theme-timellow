@@ -311,7 +311,7 @@ document.addEventListener('DOMContentLoaded', function () {
   enhanceArticleLinks();
 
   function enhanceLoadMore() {
-    var list = document.querySelector('[data-post-list]');
+    var list = document.querySelector('[data-post-list], [data-moment-list]');
     var control = document.querySelector('[data-load-more]');
     var trigger = control ? control.querySelector('[data-load-more-trigger]') : null;
 
@@ -319,6 +319,8 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
 
+    var listSelector = list.hasAttribute('data-moment-list') ? '[data-moment-list]' : '[data-post-list]';
+    var itemSelector = list.hasAttribute('data-moment-list') ? '.moment-item' : '.post-card';
     var label = trigger.querySelector('[data-load-more-label]');
     var defaultText = trigger.getAttribute('data-default-text') || '加载更多';
     var loadingText = trigger.getAttribute('data-loading-text') || defaultText;
@@ -417,7 +419,7 @@ document.addEventListener('DOMContentLoaded', function () {
       }).then(function (html) {
         var parser = new DOMParser();
         var doc = parser.parseFromString(html, 'text/html');
-        var nextList = doc.querySelector('[data-post-list]');
+        var nextList = doc.querySelector(listSelector);
         var nextTrigger = doc.querySelector('[data-load-more-trigger]');
         var fragment = document.createDocumentFragment();
         var appended = 0;
@@ -427,7 +429,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         Array.prototype.forEach.call(nextList.children, function (child) {
-          if (!child.classList || !child.classList.contains('post-card')) {
+          if (!child.matches(itemSelector)) {
             return;
           }
 
@@ -470,9 +472,12 @@ document.addEventListener('DOMContentLoaded', function () {
   enhanceLoadMore();
 
   function enhanceMomentReactions() {
-    var groups = document.querySelectorAll('[data-moment-reactions]');
-    if (!groups.length) {
+    if (!document.querySelector('[data-moment-list], [data-moment-reactions]')) {
       return;
+    }
+
+    function groups() {
+      return document.querySelectorAll('[data-moment-reactions]');
     }
 
     function closePicker(group) {
@@ -542,34 +547,35 @@ document.addEventListener('DOMContentLoaded', function () {
       });
     }
 
-    Array.prototype.forEach.call(groups, function (group) {
-      group.addEventListener('click', function (event) {
-        var button = event.target.closest('[data-reaction-key], [data-reaction-add]');
-        if (!button || !group.contains(button)) {
-          return;
+    // Delegation also handles moments appended by the load-more control.
+    document.addEventListener('click', function (event) {
+      var group = event.target.closest('[data-moment-reactions]');
+      if (!group) return;
+      var button = event.target.closest('[data-reaction-key], [data-reaction-add]');
+      if (!button || !group.contains(button)) {
+        return;
+      }
+      var picker = group.querySelector('[data-reaction-picker]');
+      var add = group.querySelector('[data-reaction-add]');
+      if (button === add) {
+        var opening = picker.hidden;
+        Array.prototype.forEach.call(groups(), closePicker);
+        picker.hidden = !opening;
+        add.setAttribute('aria-expanded', opening ? 'true' : 'false');
+        if (opening) {
+          picker.querySelector('button').focus();
         }
-        var picker = group.querySelector('[data-reaction-picker]');
-        var add = group.querySelector('[data-reaction-add]');
-        if (button === add) {
-          var opening = picker.hidden;
-          Array.prototype.forEach.call(groups, closePicker);
-          picker.hidden = !opening;
-          add.setAttribute('aria-expanded', opening ? 'true' : 'false');
-          if (opening) {
-            picker.querySelector('button').focus();
-          }
-          return;
-        }
-        if (picker.contains(button)) {
-          add.focus();
-        }
-        closePicker(group);
-        submit(group, button.getAttribute('data-reaction-key'));
-      });
+        return;
+      }
+      if (picker.contains(button)) {
+        add.focus();
+      }
+      closePicker(group);
+      submit(group, button.getAttribute('data-reaction-key'));
     });
 
     document.addEventListener('click', function (event) {
-      Array.prototype.forEach.call(groups, function (group) {
+      Array.prototype.forEach.call(groups(), function (group) {
         if (!group.contains(event.target)) {
           closePicker(group);
         }
@@ -577,7 +583,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
     document.addEventListener('keydown', function (event) {
       if (event.key === 'Escape') {
-        Array.prototype.forEach.call(groups, function (group) {
+        Array.prototype.forEach.call(groups(), function (group) {
           if (!group.querySelector('[data-reaction-picker]').hidden) {
             closePicker(group);
             group.querySelector('[data-reaction-add]').focus();

@@ -222,8 +222,11 @@ function timellow_cover($post_id = null) {
         return esc_url_raw($cover);
     }
     $content = get_post_field('post_content', $post_id);
+    if (function_exists('timellow_md_mode') && function_exists('timellow_md_render') && timellow_md_mode($post_id) === 'markdown') {
+        $content = timellow_md_render($content);
+    }
     if (preg_match('/<img[^>]+src=["\']([^"\']+)/i', $content, $matches)) {
-        return esc_url_raw($matches[1]);
+        return esc_url_raw(html_entity_decode($matches[1], ENT_QUOTES, 'UTF-8'));
     }
     $default = get_theme_mod('default_cover');
     if ($default) {
@@ -279,6 +282,43 @@ function timellow_pagination() {
         echo '<a class="page-link" href="' . esc_url(get_next_posts_page_link()) . '">下一页</a>';
     }
     echo '</nav>';
+}
+
+function timellow_list_page() {
+    return max(1, absint($_GET['timellow_page'] ?? 1));
+}
+
+function timellow_list_pagination($query, $url, $load_more = false) {
+    $total = (int) $query->max_num_pages;
+    $current = max(1, (int) $query->get('paged'));
+    if ($total < 2) return;
+    if ($load_more) {
+        if ($current < $total) {
+            $next = add_query_arg('timellow_page', $current + 1, $url);
+            echo '<nav class="load-more" data-load-more><a class="load-more-btn" data-load-more-trigger href="' . esc_url($next) . '" data-next-url="' . esc_url($next) . '" data-default-text="加载更多" data-loading-text="正在加载…" data-error-text="重试加载"><span data-load-more-label>加载更多</span><span aria-hidden="true">↓</span></a></nav>';
+        }
+        return;
+    }
+    echo '<nav class="pagination" aria-label="列表分页">';
+    if ($current > 1) {
+        echo '<a class="page-link" href="' . esc_url(add_query_arg('timellow_page', $current - 1, $url)) . '">上一页</a>';
+    }
+    echo '<span class="page-status" aria-current="page">' . esc_html($current . ' / ' . $total) . '</span>';
+    if ($current < $total) {
+        echo '<a class="page-link" href="' . esc_url(add_query_arg('timellow_page', $current + 1, $url)) . '">下一页</a>';
+    }
+    echo '</nav>';
+}
+
+function timellow_archive_years() {
+    $load = static function () {
+        global $wpdb;
+        return array_map('intval', $wpdb->get_col(
+            "SELECT DISTINCT YEAR(post_date) AS archive_year FROM {$wpdb->posts}
+             WHERE post_type = 'post' AND post_status = 'publish' ORDER BY archive_year DESC"
+        ));
+    };
+    return function_exists('timellow_cached_data') ? timellow_cached_data('archive_years', $load) : $load();
 }
 
 function timellow_comment_device_badge($device) {

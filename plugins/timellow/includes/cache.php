@@ -34,6 +34,10 @@ function timellow_cached_data($key, $loader, $minutes = null) {
 
 function timellow_cached_content($source = null) {
     global $post, $page;
+    if ($post instanceof WP_Post && post_password_required($post)) {
+        echo get_the_password_form($post);
+        return;
+    }
     $render = static function () use ($source) {
         if ($source === null) {
             the_content();
@@ -45,7 +49,7 @@ function timellow_cached_content($source = null) {
         $render();
         return;
     }
-    if (!timellow_plugin_cache_allowed() || post_password_required($post)) {
+    if (!timellow_plugin_cache_allowed()) {
         $render();
         return;
     }
@@ -107,7 +111,7 @@ function timellow_plugin_save_cache_override($post_id) {
 add_action('save_post', 'timellow_plugin_save_cache_override');
 
 function timellow_plugin_clear_sidebar_cache() {
-    foreach (['recent_posts', 'popular_posts', 'recent_comments', 'recent_moments', 'bookmark_groups'] as $key) {
+    foreach (['recent_posts', 'popular_posts', 'recent_comments', 'recent_moments', 'bookmark_groups', 'archive_years'] as $key) {
         delete_transient(timellow_plugin_data_cache_key($key));
     }
 }

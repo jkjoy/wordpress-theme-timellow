@@ -16,6 +16,19 @@ function timellow_md_supports($post_type) {
     return in_array($post_type, timellow_md_post_types(), true);
 }
 
+function timellow_md_register_meta() {
+    foreach (timellow_md_post_types() as $post_type) {
+        if (!post_type_exists($post_type)) continue;
+        register_post_meta($post_type, '_timellow_markdown_mode', [
+            'type' => 'string',
+            'single' => true,
+            'sanitize_callback' => 'sanitize_key',
+            'revisions_enabled' => post_type_supports($post_type, 'revisions'),
+        ]);
+    }
+}
+add_action('init', 'timellow_md_register_meta', 20);
+
 function timellow_md_setup_screen($screen) {
     if (timellow_md_enabled() && $screen && $screen->base === 'post' && timellow_md_supports($screen->post_type)) {
         remove_post_type_support($screen->post_type, 'editor');
@@ -40,7 +53,7 @@ function timellow_md_render($source) {
 
 function timellow_md_filter_content($content) {
     global $post;
-    if ($post instanceof WP_Post && timellow_md_mode($post) === 'markdown') {
+    if ($post instanceof WP_Post && !post_password_required($post) && timellow_md_mode($post) === 'markdown') {
         return timellow_md_render($content);
     }
     return $content;
@@ -56,11 +69,14 @@ function timellow_md_filter_excerpt($excerpt, $post) {
 add_filter('get_the_excerpt', 'timellow_md_filter_excerpt', 20, 2);
 
 function timellow_md_save_mode($post_id, $post) {
-    if (!timellow_md_enabled() || !timellow_md_supports($post->post_type) || wp_is_post_revision($post_id) || (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE)) return;
-    if (!isset($_POST['timellow_md_nonce'], $_POST['timellow_md_mode'])) return;
-    $nonce = sanitize_text_field(wp_unslash($_POST['timellow_md_nonce']));
+    if (!timellow_md_enabled() || !timellow_md_supports($post->post_type) || wp_is_post_revision($post_id)) return;
+    // Classic autosave overwrites the author's draft, but uses a revision for published posts.
+    $data = $_POST['data']['wp_autosave'] ?? $_POST;
+    $mode = $data['_timellow_markdown_mode'] ?? $data['timellow_md_mode'] ?? null;
+    if (!is_string($data['timellow_md_nonce'] ?? null) || !is_string($mode)) return;
+    $nonce = sanitize_text_field(wp_unslash($data['timellow_md_nonce']));
     if (!wp_verify_nonce($nonce, 'timellow_md_save') || !current_user_can('edit_post', $post_id)) return;
-    $mode = sanitize_key(wp_unslash($_POST['timellow_md_mode']));
+    $mode = sanitize_key(wp_unslash($mode));
     if (in_array($mode, ['markdown', 'html'], true)) {
         update_post_meta($post_id, '_timellow_markdown_mode', $mode);
     }
@@ -77,7 +93,7 @@ function timellow_md_editor($post) {
             <div class="timellow-md-format" role="group" aria-label="内容格式">
                 <button type="button" class="timellow-md-format-button" data-format="markdown" aria-pressed="<?php echo $mode === 'markdown' ? 'true' : 'false'; ?>">Markdown</button>
                 <button type="button" class="timellow-md-format-button" data-format="html" aria-pressed="<?php echo $mode === 'html' ? 'true' : 'false'; ?>">HTML</button>
-                <input type="hidden" name="timellow_md_mode" value="<?php echo esc_attr($mode); ?>">
+                <input type="hidden" name="_timellow_markdown_mode" value="<?php echo esc_attr($mode); ?>">
             </div>
             <div class="timellow-md-views" role="group" aria-label="编辑视图">
                 <button type="button" data-view="edit" aria-pressed="false">编辑</button>
@@ -139,7 +155,7 @@ function timellow_md_admin_assets($hook) {
         wp_enqueue_script('timellow-turndown', plugins_url('vendor/turndown.js', TIMELLOW_PLUGIN_DIR . '/timellow.php'), [], '7.2.4', true);
         wp_enqueue_script('timellow-turndown-gfm', plugins_url('vendor/turndown-plugin-gfm.js', TIMELLOW_PLUGIN_DIR . '/timellow.php'), ['timellow-turndown'], '1.0.2', true);
     }
-    wp_enqueue_script('timellow-markdown-editor', plugins_url('assets/editor.js', TIMELLOW_PLUGIN_DIR . '/timellow.php'), $screen->post_type === 'post' ? ['timellow-turndown-gfm'] : [], TIMELLOW_PLUGIN_VERSION, true);
+    wp_enqueue_script('timellow-markdown-editor', plugins_url('assets/editor.js', TIMELLOW_PLUGIN_DIR . '/timellow.php'), $screen->post_type === 'post' ? ['jquery', 'timellow-turndown-gfm'] : ['jquery'], TIMELLOW_PLUGIN_VERSION, true);
     wp_localize_script('timellow-markdown-editor', 'timellowMarkdown', [
         'ajaxUrl' => admin_url('admin-ajax.php'),
         'nonce' => wp_create_nonce('timellow_md_preview'),
