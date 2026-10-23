@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: Timellow
- * Description: Front-end optimization, content caching, SMTP mail, and Gravatar mirrors for the Timellow theme.
- * Version: 1.9.0
+ * Description: Front-end optimization, content caching, SMTP mail, QQ and Weixin comment alerts for the Timellow theme.
+ * Version: 1.10.0
  * Update URI: https://github.com/jkjoy/wordpress-plugin-timellow
  * Requires at least: 6.5
  * Requires PHP: 8.0
@@ -15,7 +15,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('TIMELLOW_PLUGIN_VERSION', '1.9.0');
+define('TIMELLOW_PLUGIN_VERSION', '1.10.0');
 define('TIMELLOW_PLUGIN_DIR', __DIR__);
 
 require_once TIMELLOW_PLUGIN_DIR . '/includes/updater.php';
@@ -26,6 +26,8 @@ require_once TIMELLOW_PLUGIN_DIR . '/includes/cache.php';
 require_once TIMELLOW_PLUGIN_DIR . '/includes/frontend.php';
 require_once TIMELLOW_PLUGIN_DIR . '/includes/mail.php';
 require_once TIMELLOW_PLUGIN_DIR . '/includes/admin.php';
+require_once TIMELLOW_PLUGIN_DIR . '/includes/comment-notify.php';
+require_once TIMELLOW_PLUGIN_DIR . '/includes/comment-notify-admin.php';
 require_once TIMELLOW_PLUGIN_DIR . '/includes/comment-levels.php';
 require_once TIMELLOW_PLUGIN_DIR . '/includes/comment-environment.php';
 require_once TIMELLOW_PLUGIN_DIR . '/includes/reactions.php';

@@ -208,6 +208,8 @@ function timellow_plugin_settings_page() {
         <?php wp_nonce_field('timellow_plugin_test_mail'); ?>
         <label for="timellow-test-email">收件邮箱</label> <input id="timellow-test-email" type="email" name="test_email" class="regular-text" value="<?php echo esc_attr(wp_get_current_user()->user_email); ?>" required>
         <?php submit_button('发送测试', 'secondary', 'submit', false); ?>
-    </form></div>
+    </form>
+    <?php timellow_notify_render_settings(); ?>
+    </div>
     <?php
 }
